@@ -11,25 +11,27 @@
     .button{margin:10px;cursor: pointer;width: 80px;height: 30px;}
     .selected{border: 1px solid #000;}
     /*样式必填项*/
-    #main{margin:50px auto;display: block;width: 800px;height: 500px;position: relative;}
+    #main{margin:0 auto;display: block;width: 800px;height: 500px;position: relative;overflow: hidden;border:5px solid #000;}
     .movebody{width: 100px;height: 100px;position: absolute;cursor:pointer;z-index: 1;}
     .lines{width: 100%;height: 100%;position: absolute;}
-    .point1,.point2{z-index: 1;cursor: pointer;}
+    .point1,.point2{z-index: 1;cursor: pointer;display: none;}
+    .line1,.line2{display: none;}
     </style>
 </head>
 <body>
     <div class="menu"><button class="button" onclick="addsvg();">添加</button></div>
     <div id="main">
-     <!--    <svg class="movebody" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="50" r="50" style="fill:blue;"/>
+        <!-- 定位点加fix_point类名与fix-x,fix-y属性 -->
+        <svg class="movebody fix_point" xmlns="http://www.w3.org/2000/svg" id="obj_0" fix-x="90" fix-y="50">
+            <circle cx="50" cy="50" r="40" style="fill:blue;"/>
+            <circle cx="90" cy="50" r="5" style="fill:green;"/>        
         </svg>
-        <svg class="movebody" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="50" r="50" style="fill:blue;"/>
-        </svg> -->
         <svg class="lines" xmlns="http://www.w3.org/2000/svg">
-          <!--   <circle cx="" cy="" r="" style="fill:red;" class="point1"/>
-            <circle cx="" cy="" r="" style="fill:red;" class="point2"/>
-            <path d="" class="line" stroke="black" stroke-width="2" fill="none"/> -->
+            <path d="" class="line" stroke="black" stroke-width="2" fill="none" id="path_0"/>
+            <circle class="point1" cx="" cy="" r="4" fill="red" for="path_0"></circle>
+            <circle class="point2" cx="" cy="" r="4" fill="red" for="path_0"></circle>
+            <line class="line1" x1="" y1="" x2="" y2="" stroke="red" stroke-width="1" for="path_0"></line>
+            <line class="line2" x1="" y1="" x2="" y2="" stroke="red" stroke-width="1" for="path_0"></line>
         </svg>
     </div>
     <script type="text/javascript" src="js/dragline.js"></script>
