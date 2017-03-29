@@ -32,6 +32,7 @@ function get_center(that){
     }
     return [x,y]
 }
+
 // 获取C曲线两切点坐标方法(默认切点为1/3与2/3点)
 function get_points_xy(start_x,start_y,end_x,end_y){
     var point1_x = (end_x-start_x)/3+start_x
@@ -40,6 +41,55 @@ function get_points_xy(start_x,start_y,end_x,end_y){
     var point2_y = 2*(end_y-start_y)/3+start_y
     return {'point1_x':point1_x,'point1_y':point1_y,'point2_x':point2_x,'point2_y':point2_y}
 }
+
+// 线条随物体移动方法,type:1(已知起始点)2(已知结束点)
+function move_line(that,center_x,center_y,type){
+    var select_path_id = $(that).attr('id');
+    var $point1 = $('.point1[for="'+select_path_id+'"]');
+    var $point2 = $('.point2[for="'+select_path_id+'"]');
+    var start_x,start_y,end_x,end_y;
+    if(type==1){
+        // 获取结束点坐标
+        var $link2 = $('#'+$(that).attr('link2'));
+        var link_array = get_center($link2);
+        start_x = center_x;
+        start_y = center_y;
+        end_x = link_array[0];
+        end_y = link_array[1];
+    }else if(type==2){
+        // 获取起始点坐标
+        var $link1 = $('#'+$(that).attr('link1'));
+        var link_array = get_center($link1);
+        var start_x = link_array[0];
+        var start_y = link_array[1];
+        end_x = center_x;
+        end_y = center_y;
+    }
+    // 获取point1与point2坐标，切点未移动过则保持默认值移动，移动过则不再动
+    var result = get_points_xy(start_x,start_y,end_x,end_y);
+    var point1_x = result.point1_x;
+    var point1_y = result.point1_y;
+    var point2_x = result.point2_x;
+    var point2_y = result.point2_y;
+    if($point1.hasClass('moved')){
+        point1_x = $point1.attr('cx');
+        point1_y = $point1.attr('cy');
+    }
+    if($point2.hasClass('moved')){
+        point2_x = $point2.attr('cx');
+        point2_y = $point2.attr('cy');
+    }
+    $point1.attr({'cx':point1_x,'cy':point1_y});
+    $point2.attr({'cx':point2_x,'cy':point2_y});
+    var new_path = 'M '+start_x+','+start_y+' C '+point1_x+','+point1_y+' '+point2_x+','+point2_y+' '+end_x+','+end_y;
+    $(that).attr('d',new_path);
+    //切线动
+    var $line1 = $('.line1[for="'+select_path_id+'"]');
+    var $line2 = $('.line2[for="'+select_path_id+'"]');
+    $line1.attr({'x1':start_x,'y1':start_y,'x2':point1_x,'y2':point1_y});
+    $line2.attr({'x1':end_x,'y1':end_y,'x2':point2_x,'y2':point2_y});
+}
+
 // 选中移动物体
 $('#main').on('mousedown','.movebody',function(e) {
     xx = e.pageX;
@@ -70,20 +120,20 @@ $('#main').on('mouseup','.movebody',function(e) {
         if($(this).hasClass('selected')){
             $(this).removeClass('selected');
         }else{
-            var array = get_center(this);
-            var draw_end_x = array[0];
-            var draw_end_y = array[1];
-            var result = get_points_xy(draw_start_x,draw_start_y,draw_end_x,draw_end_y);
-            var point1_x = result.point1_x;
-            var point1_y = result.point1_y;
-            var point2_x = result.point2_x;
-            var point2_y = result.point2_y;
-            var path = 'M '+draw_start_x+','+draw_start_y+' C '+point1_x+','+point1_y+' '+point2_x+','+point2_y+' '+draw_end_x+','+draw_end_y;
+            // 判断是否画过线
             var obj1_id = draw_id;
             var obj2_id = $(this).attr('id');
-            // 判断是否画过线
             var alreay = $('path[link1="'+obj1_id+'"][link2="'+obj2_id+'"]').length+$('path[link1="'+obj2_id+'"][link2="'+obj1_id+'"]').length;
             if(!alreay){
+                var array = get_center(this);
+                var draw_end_x = array[0];
+                var draw_end_y = array[1];
+                var result = get_points_xy(draw_start_x,draw_start_y,draw_end_x,draw_end_y);
+                var point1_x = result.point1_x;
+                var point1_y = result.point1_y;
+                var point2_x = result.point2_x;
+                var point2_y = result.point2_y;
+                var path = 'M '+draw_start_x+','+draw_start_y+' C '+point1_x+','+point1_y+' '+point2_x+','+point2_y+' '+draw_end_x+','+draw_end_y;
                 var $line = $('path[d=""]').eq(0);
                 $line.attr({'d':path,'link1':obj1_id,'link2':obj2_id});
                 //画切点、切线
@@ -116,79 +166,18 @@ $('#main').mousemove(function(e) {
         var move_x = $object.position().left - main_left + new_xx - xx;
         var move_y = $object.position().top - main_top+ new_yy - yy;
         $object.css('left',move_x).css('top',move_y);
-        //选择过中心线条移动
+        //线条移动
         var array = get_center(select_obj.obj);
         var center_x = array[0];
         var center_y = array[1];
-        var xystr = draw_start_x+','+draw_start_y;
+        var obj_id = $(select_obj.obj).attr('id');
         //起始点为移动物体线条处理
-        $('.line[d^="M '+xystr+'"]').each(function(){
-            var select_path_id = $(this).attr('id');
-            var $point1 = $('.point1[for="'+select_path_id+'"]');
-            var $point2 = $('.point2[for="'+select_path_id+'"]');
-            // 获取尾部未移动坐标
-            var old_d = $(this).attr('d');
-            var x2y2 = $point2.attr('cx')+','+$point2.attr('cy');
-            var end_str = old_d.split(x2y2)[1];
-            var end_x = parseFloat(end_str.split(',')[0]);
-            var end_y = parseFloat(end_str.split(',')[1]);
-            // 获取point1与point2坐标，切点未移动过则保持默认值移动，移动过则不再动
-            var result = get_points_xy(center_x,center_y,end_x,end_y);
-            var point1_x = result.point1_x;
-            var point1_y = result.point1_y;
-            var point2_x = result.point2_x;
-            var point2_y = result.point2_y;
-            if($point1.hasClass('moved')){
-                point1_x = $point1.attr('cx');
-                point1_y = $point1.attr('cy');
-            }
-            if($point2.hasClass('moved')){
-                point2_x = $point2.attr('cx');
-                point2_y = $point2.attr('cy');
-            }
-            $point1.attr({'cx':point1_x,'cy':point1_y});
-            $point2.attr({'cx':point2_x,'cy':point2_y});
-            var new_path = 'M '+center_x+','+center_y+' C '+point1_x+','+point1_y+' '+point2_x+','+point2_y+end_str;
-            $(this).attr('d',new_path);
-            //切线动
-            var $line1 = $('.line1[for="'+select_path_id+'"]');
-            var $line2 = $('.line2[for="'+select_path_id+'"]');
-            $line1.attr({'x1':center_x,'y1':center_y,'x2':point1_x,'y2':point1_y});
-            $line2.attr({'x1':end_x,'y1':end_y,'x2':point2_x,'y2':point2_y});
+        $('path[link1="'+obj_id+'"]').each(function(){
+            move_line(this,center_x,center_y,1);
         })
         //结束点为移动物体线条处理
-        $('.line[d$="'+xystr+'"]').each(function(){
-            var select_path_id = $(this).attr('id');
-            var $point1 = $('.point1[for="'+select_path_id+'"]');
-            var $point2 = $('.point2[for="'+select_path_id+'"]');
-            // 获取头部未移动坐标
-            var old_d = $(this).attr('d');
-            var start_str = old_d.split('C')[0];
-            var start_x = parseFloat(start_str.split(',')[0].split('M')[1]);
-            var start_y = parseFloat(start_str.split(',')[1]);
-            // 获取point1与point2坐标，切点未移动过则保持默认值移动，移动过则不再动
-            var result = get_points_xy(start_x,start_y,center_x,center_y);
-            var point1_x = result.point1_x;
-            var point1_y = result.point1_y;
-            var point2_x = result.point2_x;
-            var point2_y = result.point2_y;
-            if($point1.hasClass('moved')){
-                point1_x = $point1.attr('cx');
-                point1_y = $point1.attr('cy');
-            }
-            if($point2.hasClass('moved')){
-                point2_x = $point2.attr('cx');
-                point2_y = $point2.attr('cy');
-            }
-            $point1.attr({'cx':point1_x,'cy':point1_y});
-            $point2.attr({'cx':point2_x,'cy':point2_y});
-            var new_path = start_str+' C '+point1_x+','+point1_y+' '+point2_x+','+point2_y+' '+center_x+','+center_y;
-            $(this).attr('d',new_path);
-            //切线动
-            var $line1 = $('.line1[for="'+select_path_id+'"]');
-            var $line2 = $('.line2[for="'+select_path_id+'"]');
-            $line1.attr({'x1':start_x,'y1':start_y,'x2':point1_x,'y2':point1_y});
-            $line2.attr({'x1':center_x,'y1':center_y,'x2':point2_x,'y2':point2_y});
+        $('path[link2="'+obj_id+'"]').each(function(){
+            move_line(this,center_x,center_y,2);
         })
         //参数重新调整
         xx = new_xx;
