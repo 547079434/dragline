@@ -9,22 +9,29 @@
     html,body{width: 100%;height: 100%;margin:0;}
     .menu{width: 800px;height: 50px;margin:0 auto;}
     .button{margin:10px;cursor: pointer;width: 80px;height: 30px;}
-    #main{margin:50px auto;display: block;width: 800px;height: 500px;position: relative;}
-    .movebody{width: 100px;height: 100px;position: absolute;cursor:pointer;}
     .selected{border: 1px solid #000;}
-    .lines{width: 100%;height: 100%;position: absolute;z-index: -1;}
+    /*样式必填项*/
+    #main{margin:50px auto;display: block;width: 800px;height: 500px;position: relative;}
+    .movebody{width: 100px;height: 100px;position: absolute;cursor:pointer;z-index: 1;}
+    .lines{width: 100%;height: 100%;position: absolute;}
+    .point1,.point2{z-index: 1;cursor: pointer;}
     </style>
 </head>
 <body>
-    <div class="menu"><button class="button" id="add">添加</button></div>
+    <div class="menu"><button class="button" onclick="addsvg();">添加</button></div>
     <div id="main">
+     <!--    <svg class="movebody" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="50" style="fill:blue;"/>
+        </svg>
+        <svg class="movebody" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="50" style="fill:blue;"/>
+        </svg> -->
+        <svg class="lines" xmlns="http://www.w3.org/2000/svg">
+          <!--   <circle cx="" cy="" r="" style="fill:red;" class="point1"/>
+            <circle cx="" cy="" r="" style="fill:red;" class="point2"/>
+            <path d="" class="line" stroke="black" stroke-width="2" fill="none"/> -->
+        </svg>
     </div>
     <script type="text/javascript" src="js/dragline.js"></script>
-    <script type="text/javascript">
-    $('#add').click(function(){
-        $('#main').prepend('<svg class="movebody" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50" style="fill:blue;"/></svg>');
-        $('#main').append('<svg class="lines" xmlns="http://www.w3.org/2000/svg"><path d="" class="line" stroke="black" stroke-width="2"/></svg>')
-    })
-    </script>
 </body>
 </html>
