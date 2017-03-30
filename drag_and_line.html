@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>拖拽连线</title>
+    <link rel="stylesheet" type="text/css" href="css/dragline.css">
     <script type="text/javascript" src="js/jquery-3.2.0.min.js"></script>
-    
+    <script type="text/javascript" src="js/dragline.js"></script>
     <style type="text/css">
     html,body{width: 100%;height: 100%;margin:0;}
     .menu{width: 800px;height: 50px;margin:0 auto;}
@@ -12,19 +13,11 @@
     select {float: right;width: 50px;height: 20px;margin:15px;}
     .actionbtn{ border: 2px solid outset;background: #ccc; }
     .clicked { border-style: inset; }
-    .selected{border: 1px solid #000;} 
-    
-    /*样式必填项*/
-    #main{margin:0 auto;display: block;width: 800px;height: 500px;position: relative;overflow: hidden;border:5px solid #000;}
-    .movebody{width: 100px;height: 100px;position: absolute;z-index: 1;}
-    .lines{width: 100%;height: 100%;position: absolute;}
-    .point1,.point2{z-index: 1;cursor: ne-resize;display: none;}
-    .line1,.line2{display: none;}
     </style>
 </head>
 <body>
     <div class="menu">
-        <button class="button" onclick="addsvg();">添加</button>
+        <button class="button" onclick="add();">添加</button>
         <button class="button actionbtn" name="move">移动</button>
         <button class="button actionbtn" name="draw">画线</button>
         <button class="button actionbtn" name="delete">删除</button>
@@ -33,60 +26,39 @@
             <option value="1">- - - -</option>
         </select>
     </div>
-    <div id="main">
-        <!-- 定位点加fix_point类名与fix-x,fix-y属性 -->
-        <svg class="movebody fix_point" xmlns="http://www.w3.org/2000/svg" id="obj_0" fix-x="90" fix-y="50">
-            <circle cx="50" cy="50" r="40" style="fill:blue;"/>
-            <circle cx="90" cy="50" r="5" style="fill:green;"/>        
-        </svg>
-        <svg class="lines" xmlns="http://www.w3.org/2000/svg">
-            <path d="" class="line" stroke="black" stroke-width="2" fill="none" id="path_0"/>
-            <circle class="point1" cx="" cy="" r="4" fill="red" for="path_0"></circle>
-            <circle class="point2" cx="" cy="" r="4" fill="red" for="path_0"></circle>
-            <line class="line1" x1="" y1="" x2="" y2="" stroke="red" stroke-width="1" for="path_0"></line>
-            <line class="line2" x1="" y1="" x2="" y2="" stroke="red" stroke-width="1" for="path_0"></line>
-        </svg>
-    </div>
-    <script type="text/javascript" src="js/dragline.js"></script>
+    
     <script type="text/javascript">
+    var board = DragLine.CreateBoard($('body'));
+    board.setSize(500,300);
+    board.setBorder(5,'yellow');
+    function add(){
+        var inside = '<circle cx="50" cy="50" r="50" style="fill:blue;"/>';
+        var obj = DragLine.CreateMoveObj(board,inside,3);
+        obj.setSize(100,100);
+        obj.setFix(100,50);
+    }
+
     $('.actionbtn').click(function(){
         if($(this).hasClass('clicked')){
             $(this).removeClass('clicked');
-            window.status = 0;
-            $('.movebody').css('cursor','Default');
-            $('.line').css('cursor','Default');
+            DragLine.ChangeStatus(0);
         }else{
             $('.actionbtn').removeClass('clicked');
-            $(this).addClass('clicked');
-            $('.line').css('cursor','Default');
             if($(this).attr('name')=='move'){
-                $('.movebody').css('cursor','Move');
-                window.status = 1;
+                $(this).addClass('clicked');
+                DragLine.ChangeStatus(1);
             }else if($(this).attr('name')=='draw'){
-                $('.movebody').css('cursor','Crosshair');
-                window.status = 2;
+                $(this).addClass('clicked');
+                DragLine.ChangeStatus(2);
             }else if($(this).attr('name')=='delete'){
-                $('.movebody').css('cursor','pointer');
-                $('.line').css('cursor','pointer');
-                window.status = 3;
+                $(this).addClass('clicked');
+                DragLine.ChangeStatus(3);
             }
         }
     })
     $('#stroke_style').change(function(){
         var val = $(this).val();
-        window.stroke_style = val;
-    })
-    $('#main').on('click','.line',function() {
-        if(window.status == 3){
-            var id = $(this).attr('id');
-            delete_line(id);
-        }
-    })
-    $('#main').on('click','.movebody',function() {
-        if(window.status == 3){
-            var id = $(this).attr('id');
-            delete_obj(id);
-        }
+        DragLine.LineStyle(val);
     })
     </script>
 </body>

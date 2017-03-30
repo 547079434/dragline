@@ -1,0 +1,6 @@
+#dragline_board{margin:0 auto;display: block;width: 800px;height: 500px;position: relative;overflow: hidden;border:3px solid #333;}
+.movebody{width: 100px;height: 100px;position: absolute;z-index: 1;}
+.lines{width: 100%;height: 100%;position: absolute;}
+.point1,.point2{z-index: 1;cursor: ne-resize;display: none;}
+.line1,.line2{display: none;}
+.selected{border: 1px solid #000;} 
