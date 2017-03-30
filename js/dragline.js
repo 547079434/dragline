@@ -1,12 +1,14 @@
 //条件：主体id:main,移动对象class:movebody,线条画板class:lines,线条class:line
 
 // 取消右击菜单
-$(document).ready(function(){
-    $(document).bind("contextmenu",function(e){
-        return false;
-    });
-});
+// $(document).ready(function(){
+//     $(document).bind("contextmenu",function(e){
+//         return false;
+//     });
+// });
 // 初始化
+window.status = 0;                              //操作状态码, 0-无操作,1-移动,2-画线,3-删除
+window.stroke_style = 0;                        //线条状态码, 0-实线,1-虚线
 var xx = 0;                                     //鼠标x轴
 var yy = 0;                                     //鼠标y轴
 var select_obj = {'obj':'','type':''};          //选中物体,type：object-物体,point-切点
@@ -97,10 +99,10 @@ $('#main').on('mousedown','.movebody',function(e) {
     var array = get_center(this);
     draw_start_x = array[0];
     draw_start_y = array[1];
-    if(e.which==1){
+    if(status==1){
         select_obj.obj = this;
         select_obj.type = 'object';
-    }else if(e.which==3){
+    }else if(status==2){
         if($(this).hasClass('selected')){
             $(this).removeClass('selected');
         }else{
@@ -114,9 +116,9 @@ $('#main').on('mousedown','.movebody',function(e) {
 $('#main').on('mouseup','.movebody',function(e) { 
     var end_xx = e.pageX;
     var end_yy = e.pageY;
-    if(e.which==1){
+    if(status==1){
         select_obj = {'obj':'','type':''};
-    }else if(e.which==3){
+    }else if(status==2){
         if($(this).hasClass('selected')){
             $(this).removeClass('selected');
         }else{
@@ -136,6 +138,9 @@ $('#main').on('mouseup','.movebody',function(e) {
                 var path = 'M '+draw_start_x+','+draw_start_y+' C '+point1_x+','+point1_y+' '+point2_x+','+point2_y+' '+draw_end_x+','+draw_end_y;
                 var $line = $('path[d=""]').eq(0);
                 $line.attr({'d':path,'link1':obj1_id,'link2':obj2_id});
+                if(stroke_style==1){
+                    $line.attr('stroke-dasharray','5,5');
+                }
                 //画切点、切线
                 var select_path_id = $line.attr('id');
                 $('.point1[for="'+select_path_id+'"]').attr({'cx':point1_x,'cy':point1_y});
@@ -260,3 +265,34 @@ $('#main').on('mouseenter','.line',function(e) {
    $('.line1[for="'+id+'"]').css('display','block');
    $('.line2[for="'+id+'"]').css('display','block');
 }); 
+
+
+// 删除线条及相关切线切点方法
+function delete_line(id){
+    $('#'+id).attr({'d':'','link1':'','link2':'','stroke':'black','stroke-dasharray':''});
+    $('.point1[for="'+id+'"]').attr({'cx':'','cy':''}).css('display','none');
+    $('.point2[for="'+id+'"]').attr({'cx':'','cy':''}).css('display','none');
+    $('.line1[for="'+id+'"]').attr({'x1':'','y1':'','x2':'','y2':''}).css('display','none');
+    $('.line2[for="'+id+'"]').attr({'x1':'','y1':'','x2':'','y2':''}).css('display','none');
+}
+
+// 删除物体方法
+function delete_obj(id){
+    $('path[link1="'+id+'"]').each(function(){
+        var link1_id = $(this).attr('id'); 
+        $('.point1[for="'+link1_id+'"]').remove();
+        $('.point2[for="'+link1_id+'"]').remove();
+        $('.line1[for="'+link1_id+'"]').remove();
+        $('.line2[for="'+link1_id+'"]').remove();
+        $(this).remove();
+    })
+    $('path[link2="'+id+'"]').each(function(){
+        var link2_id = $(this).attr('id'); 
+        $('.point1[for="'+link2_id+'"]').remove();
+        $('.point2[for="'+link2_id+'"]').remove();
+        $('.line1[for="'+link2_id+'"]').remove();
+        $('.line2[for="'+link2_id+'"]').remove();
+        $(this).remove();
+    })
+    $('#'+id).remove();
+}
