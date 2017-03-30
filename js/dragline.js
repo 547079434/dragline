@@ -1,32 +1,33 @@
-//构造函数体
+// 构造函数体
 var DragLine = function(){
 
 };
 
-// 添加画布方法
+// 创建画布
 DragLine.CreateBoard = function(that){
     $(that).append('<div id="dragline_board"><svg class="lines" xmlns="http://www.w3.org/2000/svg"></svg></div>');
-    // 获取左边距
+    // 获取左边距方法
     function get_left(that){
         return $(that).offset().left+parseInt($(that).css('borderLeftWidth').split('px')[0]); 
     }
-    // 获取上边距
+    // 获取上边距方法
     function get_top(that){
         return $(that).offset().top+parseInt($(that).css('borderTopWidth').split('px')[0]); 
     }
     // 初始化
-    window.action_status = 0;                          //操作状态码, 0-无操作,1-移动,2-画线,3-删除
-    window.stroke_style = 0;                           //线条状态码, 0-实线,1-虚线
-    window.draw_path_id = 1;                           //初始化线条id
-    window.draw_obj_id = 1;                            //初始化物体id
+    var draw_path_id = 1;                              //初始化线条id
+    var draw_obj_id = 1;                               //初始化物体id
+    var action_status = 0;                             //操作状态码, 0-无操作,1-移动,2-画线,3-删除
+    var stroke_style = 0;                              //线条状态码, 0-实线,1-虚线
+    var stroke_color = 'black';                        //线条颜色
     var xx = 0;                                        //鼠标x轴
     var yy = 0;                                        //鼠标y轴
     var select_obj = {'obj':'','type':''};             //选中物体,type：object-物体,point-切点
     var draw_id = '';                                  //右击初始物体id
     var draw_start_x = 0;                              //选中物体起始x轴
     var draw_start_y = 0;                              //选中物体起始y轴
-    var main_left = get_left($('#dragline_board'))     //画布左边距
-    var main_top = get_top($('#dragline_board'))       //画布上边距
+    var main_left = get_left($('#dragline_board'));    //画布左边距
+    var main_top = get_top($('#dragline_board'));      //画布上边距
     // 绑定选中移动物体事件
     $('#dragline_board').on('mousedown','.movebody',function(e) {
         xx = e.pageX;
@@ -174,7 +175,7 @@ DragLine.CreateBoard = function(that){
                     var point2_y = result.point2_y;
                     var path = 'M '+draw_start_x+','+draw_start_y+' C '+point1_x+','+point1_y+' '+point2_x+','+point2_y+' '+draw_end_x+','+draw_end_y;
                     var $line = $('path[d=""]').eq(0);
-                    $line.attr({'d':path,'link1':obj1_id,'link2':obj2_id});
+                    $line.attr({'d':path,'link1':obj1_id,'link2':obj2_id,'stroke':stroke_color});
                     if(stroke_style==1){
                         $line.attr('stroke-dasharray','5,5');
                     }
@@ -267,14 +268,14 @@ DragLine.CreateBoard = function(that){
     })
     // 绑定删线条事件
     $('#dragline_board').on('click','.line',function() {
-        if(window.action_status == 3){
+        if(action_status == 3){
             var id = $(this).attr('id');
             delete_line(id);
         }
     })
     // 绑定删物体事件
     $('#dragline_board').on('click','.movebody',function() {
-        if(window.action_status == 3){
+        if(action_status == 3){
             var id = $(this).attr('id');
             delete_obj(id);
         }
@@ -288,7 +289,24 @@ DragLine.CreateBoard = function(that){
        $('.line2[for="'+id+'"]').css('display','block');
     }); 
 
-    var $board = $('#dragline_board')
+    // 添加初始线条与切线切点方法
+    function CreateLine(that){
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');   //创建svg元素
+        $(path).addClass('line').attr({'stroke':'black','stroke-width':'2','fill':'none','d':'','id':'path_'+draw_path_id});
+        var point1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');   
+        $(point1).addClass('point1').attr({'cx':'','cy':'','r':'4','fill':'red','for':'path_'+draw_path_id});
+        var p_line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');   
+        $(p_line1).addClass('line1').attr({'x1':'','y1':'','x2':'','y2':'','stroke':'red','stroke-width':'1','for':'path_'+draw_path_id});
+        var point2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');   
+        $(point2).addClass('point2').attr({'cx':'','cy':'','r':'4','fill':'red','for':'path_'+draw_path_id});
+        var p_line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');   
+        $(p_line2).addClass('line2').attr({'x1':'','y1':'','x2':'','y2':'','stroke':'red','stroke-width':'1','for':'path_'+draw_path_id});
+        $(that).children('.lines').append(path,point1,point2,p_line1,p_line2);
+        draw_path_id += 1;
+    }
+
+    // 添加返回对象方法
+    var $board = $('#dragline_board');
     $board.extend({
         // 设置画板宽高方法
         setSize:function(x,y){
@@ -301,69 +319,55 @@ DragLine.CreateBoard = function(that){
             $(this).css({'border-width':width,'border-color':color});
             main_left = get_left(this);
             main_top = get_top(this);
+        },
+        // 状态切换方法:0-无操作,1-移动,2-画线,3-删除
+        setStatus:function(s){
+            $('.movebody').css('cursor','Default');
+            $('.line').css('cursor','Default');
+            if(s==0){
+                action_status = 0;
+            }else if(s==1){
+                $('.movebody').css('cursor','Move');
+                action_status = 1;
+            }else if(s==2){
+                $('.movebody').css('cursor','Crosshair');
+                action_status = 2;
+            }else if(s==3){
+                $('.movebody').css('cursor','pointer');
+                $('.line').css('cursor','pointer');
+                action_status = 3;
+            }
+        },
+        // 线条类型切换方法:0-实线,1-虚线
+        setLineStyle:function(style){
+            stroke_style = style;
+        },
+        // 线条颜色切换
+        setLineColor:function(color){
+            stroke_color = color;
+        },
+        // 添加物体方法 (num为每个物体添加线条数,默认2)
+        createMoveObj:function(svg,num=2){
+            $(this).prepend('<svg class="movebody" xmlns="http://www.w3.org/2000/svg" id="obj_'+draw_obj_id+'">'+svg+'</svg>');
+            for(var i=0;i<num;i++){
+                CreateLine(this);
+            }
+            var $obj = $('#obj_'+draw_obj_id);
+            $obj.extend({
+                // 设置物体宽高方法
+                setSize:function(x,y){
+                    $(this).css({'width':x,'height':y});
+                },
+                // 设置定位点位置方法
+                setFix:function(x,y){
+                    $(this).addClass('fix_point');
+                    $(this).attr({'fix-x':x,'fix-y':y});
+                }
+            })
+            draw_obj_id += 1;
+            return $obj;
         }
     })
     return $board;
 }
 
-// 添加初始线条与切线切点方法
-DragLine.CreateLine = function(that){
-    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');   //创建svg元素
-    $(path).addClass('line').attr({'stroke':'black','stroke-width':'2','fill':'none','d':'','id':'path_'+draw_path_id});
-    var point1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');   
-    $(point1).addClass('point1').attr({'cx':'','cy':'','r':'4','fill':'red','for':'path_'+draw_path_id});
-    var p_line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');   
-    $(p_line1).addClass('line1').attr({'x1':'','y1':'','x2':'','y2':'','stroke':'red','stroke-width':'1','for':'path_'+draw_path_id});
-    var point2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');   
-    $(point2).addClass('point2').attr({'cx':'','cy':'','r':'4','fill':'red','for':'path_'+draw_path_id});
-    var p_line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');   
-    $(p_line2).addClass('line2').attr({'x1':'','y1':'','x2':'','y2':'','stroke':'red','stroke-width':'1','for':'path_'+draw_path_id});
-    $('.lines').append(path,point1,point2,p_line1,p_line2);
-    draw_path_id += 1;
-}
-
-// 添加物体方法 (num为每个物体添加线条数,默认2)
-DragLine.CreateMoveObj = function(that,svg,num=2){
-    $(that).prepend('<svg class="movebody" xmlns="http://www.w3.org/2000/svg" id="obj_'+draw_obj_id+'">'+svg+'</svg>');
-    for(var i=0;i<num;i++){
-        DragLine.CreateLine();
-    }
-    var $obj = $('#obj_'+draw_obj_id);
-    $obj.extend({
-        // 设置物体宽高方法
-        setSize:function(x,y){
-            $(this).css({'width':x,'height':y});
-        },
-        // 设置定位点位置方法
-        setFix:function(x,y){
-            $(this).addClass('fix_point');
-            $(this).attr({'fix-x':x,'fix-y':y});
-        }
-    })
-    draw_obj_id += 1;
-    return $obj;
-}
-
-// 状态切换方法:0-无操作,1-移动,2-画线,3-删除
-DragLine.ChangeStatus = function(s){
-    $('.movebody').css('cursor','Default');
-    $('.line').css('cursor','Default');
-    if(s==0){
-        window.action_status = 0;
-    }else if(s==1){
-        $('.movebody').css('cursor','Move');
-        window.action_status = 1;
-    }else if(s==2){
-        $('.movebody').css('cursor','Crosshair');
-        window.action_status = 2;
-    }else if(s==3){
-        $('.movebody').css('cursor','pointer');
-        $('.line').css('cursor','pointer');
-        window.action_status = 3;
-    }
-}
-
-// 线条类型切换方法:0-实线,1-虚线
-DragLine.LineStyle = function(s){
-    window.stroke_style = s;
-}
