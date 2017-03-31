@@ -327,9 +327,15 @@ DragLine.CreateBoard = function(that){
        $('.line1[for="'+id+'"]').css('display','block');
        $('.line2[for="'+id+'"]').css('display','block');
     }); 
+    // 取消右键菜单
+    $board.bind("contextmenu",function(){
+        return false;
+    });
 
     // 添加返回对象方法
     $board.extend({
+        main_left:main_left,
+        main_top:main_top,
         // 设置画板宽高方法
         setSize:function(x,y){
             $(this).css({'width':x,'height':y});
@@ -370,8 +376,11 @@ DragLine.CreateBoard = function(that){
         },
         // 添加物体方法 (num为每个物体添加线条数,默认2)
         createMoveObj:function(svg){
-            $(this).prepend('<svg class="movebody" xmlns="http://www.w3.org/2000/svg" id="obj_'+draw_obj_id+'">'+svg+'</svg>');
+            $(this).append('<svg class="movebody" xmlns="http://www.w3.org/2000/svg" id="obj_'+draw_obj_id+'">'+svg+'</svg>');
             var $obj = $('#obj_'+draw_obj_id);
+            var cx = ($(this).width()-$obj.width())/2;
+            var cy = ($(this).height()-$obj.height())/2;
+            $obj.css({'left':cx,'top':cy});
             $obj.extend({
                 // 设置物体宽高方法
                 setSize:function(x,y){
@@ -390,3 +399,123 @@ DragLine.CreateBoard = function(that){
     return $board;
 }
 
+// 创建菜单
+DragLine.CreateMenu = function($board){
+    var status_li = '<li id="dragMove" class="li_status" title="移动">～</li><li id="dragDraw" class="li_status" title="连线">一</li><li id="dragDelete" class="li_status" title="删除">×</li><div class="menuline"></div>';
+    var icon_li = '<li id="addCircle" class="li_icon">○</li><li id="addRect" class="li_icon">□</li><li id="addTriangle" class="li_icon">△</li><div class="menuline"></div>';
+    var style_select = '<select id="strokeStyle"><option value="0">—</option><option value="1">- -</option></select><select id="strokeColor"><option value="black" style="color:black">——</option><option value="red" style="color:red">——</option><option value="green" style="color:green">——</option><option value="yellow" style="color:yellow">——</option></select><select id="fillColor"><option value="none">无</option><option value="black" style="color:black">■</option><option value="red" style="color:red">■</option><option value="green" style="color:green">■</option><option value="yellow" style="color:yellow">■</option></select>'
+    $board.append('<div class="dragline_menu"><ul>'+status_li+icon_li+style_select+'</ul></div>');
+
+    // 初始化
+    var main_left = $board.main_left;                       //画布左边距
+    var main_top = $board.main_top;                         //画布上边距
+    var move_obj = '';                                      //移动物体
+    var btn_obj = '';                                       //已点击按钮
+    var xx = 0;                                             //鼠标x轴
+    var yy = 0;                                             //鼠标y轴
+    var stroke_style = '';                                   //初始边框样式
+    var stroke_color = 'black';                             //初始边框颜色
+    var fill_color = 'none';                                //初始填充色
+
+    // 添加共用方法
+    function commonAdd(e,obj,that){
+        xx = e.pageX;
+        yy = e.pageY;
+        obj.css({'left':xx-main_left-obj.width()/2,'top':yy-main_top-obj.height()/2,'opacity':0.5,'cursor':'Move','fill':fill_color,'stroke':stroke_color,'stroke-width':1,'stroke-dasharray':stroke_style});
+        $(that).css('border-style','inset');
+        move_obj = obj;
+        btn_obj = $(that);
+        if(!$('#dragMove').hasClass('clicked')){
+            $('#dragMove').trigger('click');
+        }
+    }
+
+    // 状态切换
+    $board.on('click','.li_status',function(){
+        if($(this).hasClass('clicked')){
+            $(this).removeClass('clicked');
+            $board.setStatus(0);
+        }else{
+            $('.li_status').removeClass('clicked');
+            if($(this).attr('id')=='dragMove'){
+                $(this).addClass('clicked');
+                $board.setStatus(1);
+            }else if($(this).attr('id')=='dragDraw'){
+                $(this).addClass('clicked');
+                $board.setStatus(2);
+            }else if($(this).attr('id')=='dragDelete'){
+                $(this).addClass('clicked');
+                $board.setStatus(3);
+            }
+        }
+    })
+    // 添加圆
+    $board.on('mousedown','#addCircle',function(e) {
+        var inside = '<circle cx="41" cy="41" r="40"/>';
+        var obj = $board.createMoveObj(inside);
+        obj.setSize(82,82);
+        commonAdd(e,obj,this);
+    })
+    // 添加方块
+    $board.on('mousedown','#addRect',function(e) {
+        var inside = '<rect x="1" y="1" width="100" height="80"/>';
+        var obj = $board.createMoveObj(inside);
+        obj.setSize(102,82);
+        commonAdd(e,obj,this);
+    })
+    // 添加三角
+    $board.on('mousedown','#addTriangle',function(e) {
+        var inside = '<path d="M 0,80 L 80,80 40,0 Z"/>';
+        var obj = $board.createMoveObj(inside);
+        obj.setSize(80,81);
+        commonAdd(e,obj,this);
+    })
+    // 线条样式切换
+    $board.on('change','#strokeStyle',function(e) {
+        var val = $(this).val();
+        $board.setLineStyle(val);
+        if(val==1){
+            stroke_style = '5,5';
+        }else{
+            stroke_style = '';
+        }
+    })
+    // 线条颜色切换
+    $board.on('change','#strokeColor',function(e) {
+        var val = $(this).val();
+        $(this).css('color',val);
+        $board.setLineColor(val);
+        stroke_color = val;
+    })
+    // 填充颜色切换
+    $board.on('change','#fillColor',function(e) {
+        var val = $(this).val();
+        $(this).css('color',val);
+        fill_color = val;
+    })
+    // 移动事件
+    $board.mousemove(function(e) {
+        if(move_obj){
+            new_xx = e.pageX;
+            new_yy = e.pageY;
+            var left = move_obj.position().left-main_left+new_xx-xx;
+            var top = move_obj.position().top-main_top+new_yy-yy;
+            move_obj.css({'left':left,'top':top});
+            xx = new_xx;
+            yy = new_yy;
+        }
+    })
+    // 鼠标抬起重置参数
+    $board.mouseup(function(e) {
+        if(move_obj){
+            if(e.which==1){
+                move_obj.css('opacity',1);
+                move_obj = '';
+            }else if(e.which==3){
+                move_obj.remove();
+            }
+            btn_obj.css('border-style','outset');
+            btn_obj = '';
+        }
+    })
+}
