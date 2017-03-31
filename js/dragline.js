@@ -375,11 +375,13 @@ DragLine.CreateBoard = function(that){
             stroke_color = color;
         },
         // 添加物体方法 (num为每个物体添加线条数,默认2)
-        createMoveObj:function(svg){
+        createMoveObj:function(svg,cx='',cy=''){
             $(this).append('<svg class="movebody" xmlns="http://www.w3.org/2000/svg" id="obj_'+draw_obj_id+'">'+svg+'</svg>');
             var $obj = $('#obj_'+draw_obj_id);
-            var cx = ($(this).width()-$obj.width())/2;
-            var cy = ($(this).height()-$obj.height())/2;
+            if(cx === '' && cy === ''){
+                var cx = ($(this).width()-$obj.width())/2;
+                var cy = ($(this).height()-$obj.height())/2;
+            }
             $obj.css({'left':cx,'top':cy});
             $obj.extend({
                 // 设置物体宽高方法
@@ -401,9 +403,9 @@ DragLine.CreateBoard = function(that){
 
 // 创建菜单
 DragLine.CreateMenu = function($board){
-    var status_li = '<li id="dragMove" class="li_status" title="移动">～</li><li id="dragDraw" class="li_status" title="连线">一</li><li id="dragDelete" class="li_status" title="删除">×</li><div class="menuline"></div>';
+    var status_li = '<li id="dragMove" class="li_status" title="移动">移动</li><li id="dragDraw" class="li_status" title="连线">连线</li><li id="dragDelete" class="li_status" title="删除">删除</li><div class="menuline"></div>';
     var icon_li = '<li id="addCircle" class="li_icon">○</li><li id="addRect" class="li_icon">□</li><li id="addTriangle" class="li_icon">△</li><div class="menuline"></div>';
-    var style_select = '<select id="strokeStyle"><option value="0">—</option><option value="1">- -</option></select><select id="strokeColor"><option value="black" style="color:black">——</option><option value="red" style="color:red">——</option><option value="green" style="color:green">——</option><option value="yellow" style="color:yellow">——</option></select><select id="fillColor"><option value="none">无</option><option value="black" style="color:black">■</option><option value="red" style="color:red">■</option><option value="green" style="color:green">■</option><option value="yellow" style="color:yellow">■</option></select>'
+    var style_select = '<select id="strokeStyle"><option value="0">—</option><option value="1">- -</option></select><select id="strokeColor"><option value="black" style="color:black">——</option><option value="red" style="color:red">——</option><option value="green" style="color:green">——</option><option value="yellow" style="color:yellow">——</option></select><select id="fillColor"><option value="none">无</option><option value="black" style="color:black">■</option><option value="red" style="color:red">■</option><option value="green" style="color:green">■</option><option value="yellow" style="color:yellow">■</option></select>';
     $board.append('<div class="dragline_menu"><ul>'+status_li+icon_li+style_select+'</ul></div>');
 
     // 初始化
@@ -413,7 +415,7 @@ DragLine.CreateMenu = function($board){
     var btn_obj = '';                                       //已点击按钮
     var xx = 0;                                             //鼠标x轴
     var yy = 0;                                             //鼠标y轴
-    var stroke_style = '';                                   //初始边框样式
+    var stroke_style = '';                                  //初始边框样式
     var stroke_color = 'black';                             //初始边框颜色
     var fill_color = 'none';                                //初始填充色
 
