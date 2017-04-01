@@ -17,12 +17,12 @@
     DragLine.CreateMenu(board);
     // board.setSize(500,300);
     // board.setBorder(5,'yellow');
-    function add(){
-        var inside = '<circle cx="50" cy="50" r="40" style="fill:blue;"/>';
-        var obj = board.createMoveObj(inside);
-        obj.setSize(100,100);
-        // obj.setFix(100,50);
-    }
+ 
+    var inside = '<circle cx="55" cy="55" r="40" style="fill:none;" stroke="blue" stroke-width="2"/><rect width="30" height="16" x="0" y="47" rx="5" ry="5" fill="orange"/>';
+    var obj = board.createMoveObj(inside,100,100);
+    obj.setSize(110,110);
+    obj.setFix(15,55);
+
     </script>
 </body>
 </html>
