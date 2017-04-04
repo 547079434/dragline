@@ -234,8 +234,10 @@ DragLine.CreateBoard = function(that){
         var now_yy = e.pageY;
         if(select_obj.type == 'object'){        //物体移动
             var $object = $(select_obj.obj);
-            var move_x = $object.position().left - main_left + now_xx - xx;
-            var move_y = $object.position().top - main_top+ now_yy - yy;
+            // var move_x = $object.position().left - main_left + now_xx - xx;
+            var move_x =parseInt($object.css('left').split('px')[0]) + now_xx - xx;
+            // var move_y = $object.position().top - main_top+ now_yy - yy;
+            var move_y =parseInt($object.css('top').split('px')[0]) + now_yy - yy;
             $object.css('left',move_x).css('top',move_y);
             //线条移动
             var array = get_center(select_obj.obj);
@@ -500,8 +502,10 @@ DragLine.CreateMenu = function($board){
         if(move_obj){
             new_xx = e.pageX;
             new_yy = e.pageY;
-            var left = move_obj.position().left-main_left+new_xx-xx;
-            var top = move_obj.position().top-main_top+new_yy-yy;
+            var left =parseInt(move_obj.css('left').split('px')[0]) + new_xx - xx;
+            var top =parseInt(move_obj.css('top').split('px')[0]) + new_yy - yy;
+            // var left = move_obj.position().left-main_left+new_xx-xx;
+            // var top = move_obj.position().top-main_top+new_yy-yy;
             move_obj.css({'left':left,'top':top});
             xx = new_xx;
             yy = new_yy;
