@@ -14,15 +14,24 @@
 <body>
     <script type="text/javascript">
     var board = DragLine.CreateBoard($('body'));
-    DragLine.CreateMenu(board);
+    // DragLine.CreateMenu(board);
     // board.setSize(500,300);
-    // board.setBorder(5,'yellow');
+    board.setBorder(0);
  
-    var inside = '<circle cx="55" cy="55" r="40" style="fill:none;" stroke="blue" stroke-width="2"/><rect width="30" height="16" x="0" y="47" rx="5" ry="5" fill="orange"/>';
-    var obj = board.createMoveObj(inside,100,100);
-    obj.setSize(110,110);
-    obj.setFix(15,55);
+    // var inside = '<circle cx="55" cy="55" r="40" style="fill:none;" stroke="blue" stroke-width="2"/><rect width="30" height="16" x="0" y="47" rx="5" ry="5" fill="orange"/>';
+    // var obj = board.createMoveObj(inside,100,100,'test');
+    // obj.setSize(110,110);
+    // obj.setFix(15,55);
 
+    var data = {
+        'father':{'id':'main','name':'张三'},
+        'children':[
+            {'id':'1','name':'名字','style':1,'close':90},
+            {'id':'2','name':'名字','style':1,'close':90},
+            {'id':'3','name':'名字','style':2,'close':90}
+        ]
+    }
+    DragLine.LoadingInfo(board,data);
     </script>
 </body>
 </html>

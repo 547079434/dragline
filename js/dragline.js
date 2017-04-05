@@ -321,11 +321,13 @@ DragLine.CreateBoard = function(that){
     })
     // 绑定切点显示事件
     $board.on('mouseenter','.line',function(e) { 
-       var id = $(this).attr('id');
-       $('.point1[for="'+id+'"]').css('display','block');
-       $('.point2[for="'+id+'"]').css('display','block');
-       $('.line1[for="'+id+'"]').css('display','block');
-       $('.line2[for="'+id+'"]').css('display','block');
+        if(action_status==1||action_status==2){
+            var id = $(this).attr('id');
+            $('.point1[for="'+id+'"]').css('display','block');
+            $('.point2[for="'+id+'"]').css('display','block');
+            $('.line1[for="'+id+'"]').css('display','block');
+            $('.line2[for="'+id+'"]').css('display','block');
+        }
     }); 
     // 取消右键菜单
     $board.bind("contextmenu",function(){
@@ -375,9 +377,13 @@ DragLine.CreateBoard = function(that){
             stroke_color = color;
         },
         // 添加物体方法 (num为每个物体添加线条数,默认2)
-        createMoveObj:function(svg,cx='',cy=''){
-            $(this).append('<svg class="movebody" xmlns="http://www.w3.org/2000/svg" id="obj_'+draw_obj_id+'">'+svg+'</svg>');
-            var $obj = $('#obj_'+draw_obj_id);
+        createMoveObj:function(svg,cx='',cy='',id=''){
+            var obj_id = 'obj_'+draw_obj_id;
+            if(id){
+                obj_id = id;
+            }
+            $(this).append('<svg class="movebody" xmlns="http://www.w3.org/2000/svg" id="'+obj_id+'">'+svg+'</svg>');
+            var $obj = $('#'+obj_id);
             if(cx === '' && cy === ''){
                 var cx = ($(this).width()-$obj.width())/2;
                 var cy = ($(this).height()-$obj.height())/2;
@@ -394,7 +400,9 @@ DragLine.CreateBoard = function(that){
                     $(this).attr({'fix-x':x,'fix-y':y});
                 }
             })
-            draw_obj_id += 1;
+            if(!id){
+                draw_obj_id += 1;
+            }
             return $obj;
         }
     })
@@ -520,4 +528,50 @@ DragLine.CreateMenu = function($board){
             btn_obj = '';
         }
     })
+}
+
+// 生成单一指向关系图
+DragLine.LoadingInfo = function($board,data){
+    // 中心点画圆
+    var circle = '<circle cx="30" cy="30" r="28" style="fill:white;" stroke="blue" stroke-width="2"/>';
+    var obj = $board.createMoveObj(circle,'','',data.father.id);
+    obj.setSize(60,60);
+
+    // 获取变量
+    var width = $board.width();                                         //画板宽度
+    var height = $board.height();                                       //画板高度
+    var x0 = width/2;                                                   //中心点x轴
+    var y0 = height/2;                                                  //中心点y轴
+
+    var r = 100;
+
+    // 分布算法(用斜率算)
+    function twoPart(){
+        var l = height/width;
+        // (x-x0)^2+(l*x-y0)^2-r*r = 0
+        var a = 1+l*l;
+        var b = -(2*x0+2*l*y0);
+        var c = -r*r;
+        var x1 = (-b-Math.sqrt(b*b-4*a*c))/(2*a);
+        var y1 = x1*l
+        var x2 = (-b+Math.sqrt(b*b-4*a*c))/(2*a);
+        var y2 = x2*l
+        console.log(x1,y1,x2,y2);
+        return [x1,y1,x2,y2]
+    }
+
+    // 圆方程
+    function c(x){
+        // (x-x0)2+(y-y0)2=r*r;
+        console.log(x0,y0,r)
+        var y1 = y0 + Math.sqrt(r*r-(x-x0)*(x-x0));
+        var y2 = y0 - Math.sqrt(r*r-(x-x0)*(x-x0));
+        console.log(y1,y2);
+        return [y1,y2]
+    }
+    // twoPart()
+    c(500)
+    // for(i in data.children){
+    //     var children = data.children[i];
+    // }
 }
