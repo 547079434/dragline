@@ -1,7 +1,0 @@
-html,body{ width: 100%;height: 100%;margin: 0; }
-.main { width: 1000px;height: 500px;margin: 50px auto;position: relative; }
-.object { position: absolute;left: 11px;top: 11px;width: 30px;height: 30px;border-radius: 25px;background: red; }
-.content { width: 800px;height: 500px;border: 1px solid #333;float:left; }
-.menu { width: 196px;height: 498px;border: 2px solid #333;border-left:none;float:left;}
-.rect { width: 48px;height: 48px;float: left;border: 1px solid #333; }
-.move { background: yellow; }
