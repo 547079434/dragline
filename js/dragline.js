@@ -674,10 +674,54 @@ DragLine.LoadingInfo = function($board,data){
             var inside = '<circle cx="'+(r+1)+'" cy="'+(r+1)+'" r="'+r+'" style="fill:'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1"/>'+text;
             var obj = $board.createMoveObj(inside,xy.x,xy.y,children.id);
             obj.setSize((r+1)*2,(r+1)*2);
+            obj.attr({'style_name':children.style,'close':children.close});
             var line = $board.drawLine(obj.attr('id'),data.father.id);
             line.attr({'stroke':line_color,'stroke-width':1});
         }else{
             console.log('节点不足：',children.id);
         }
     }
+
+    var info = {
+        // 筛选类型方法
+        selectStyle:function(style,type){
+            $('.movebody[style_name="'+style+'"]').each(function(){
+                if(type==1){
+                    $(this).hide();
+                }else{
+                    $(this).show();
+                }
+                var this_id = $(this).attr('id');
+                $('path[link1="'+this_id+'"]').each(function(){
+                    if(type==1){
+                        $(this).hide();
+                    }else{
+                        $(this).show();
+                    }
+                })
+            })
+        },
+        // 筛选亲密度方法
+        selectClose:function(min,max){
+            $('.movebody').each(function(){
+                var close = $(this).attr('close');
+                if(close){
+                    close = parseInt(close);
+                    var this_id = $(this).attr('id');
+                    if(close<=max && close>=min){
+                        $(this).show();
+                        $('path[link1="'+this_id+'"]').each(function(){
+                            $(this).show();
+                        })
+                    }else{
+                        $(this).hide();
+                        $('path[link1="'+this_id+'"]').each(function(){
+                            $(this).hide();
+                        })
+                    }
+                }
+            })
+        }
+    }
+    return info;
 }
