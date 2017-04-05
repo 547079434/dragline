@@ -158,6 +158,7 @@ DragLine.CreateBoard = function(that){
             $('.line1[for="'+select_path_id+'"]').attr({'x1':start_x,'y1':start_y,'x2':point1_x,'y2':point1_y});
             $('.line2[for="'+select_path_id+'"]').attr({'x1':end_x,'y1':end_y,'x2':point2_x,'y2':point2_y});
         }
+        return line;
     }
     // 删除线条及相关切线切点方法
     function delete_line(id){
@@ -378,7 +379,7 @@ DragLine.CreateBoard = function(that){
         setLineColor:function(color){
             stroke_color = color;
         },
-        // 添加物体方法 (num为每个物体添加线条数,默认2)
+        // 添加物体方法
         createMoveObj:function(svg,cx='',cy='',id=''){
             var obj_id = 'obj_'+draw_obj_id;
             if(id){
@@ -406,6 +407,12 @@ DragLine.CreateBoard = function(that){
                 draw_obj_id += 1;
             }
             return $obj;
+        },
+        // 画线方法
+        drawLine:function(start_id,end_id){
+            var l = CreateLine($board);
+            var line = draw_line(start_id,l,1,end_id);
+            return line;
         }
     })
     return $board;
@@ -536,46 +543,141 @@ DragLine.CreateMenu = function($board){
 
 // 生成单一指向关系图
 DragLine.LoadingInfo = function($board,data){
-    // 中心点画圆
-    var circle = '<circle cx="30" cy="30" r="28" style="fill:white;" stroke="blue" stroke-width="2"/>';
-    var obj = $board.createMoveObj(circle,'','',data.father.id);
-    obj.setSize(60,60);
-
     // 获取变量
     var width = $board.width();                                         //画板宽度
     var height = $board.height();                                       //画板高度
-    var x0 = width/2;                                                   //中心点x轴
-    var y0 = height/2;                                                  //中心点y轴
-
-    var r = 100;
-
-    // 分布算法(用斜率算)
-    function twoPart(){
-        var l = height/width;
-        // (x-x0)^2+(l*x-y0)^2-r*r = 0
-        var a = 1+l*l;
-        var b = -(2*x0+2*l*y0);
-        var c = -r*r;
-        var x1 = (-b-Math.sqrt(b*b-4*a*c))/(2*a);
-        var y1 = x1*l
-        var x2 = (-b+Math.sqrt(b*b-4*a*c))/(2*a);
-        var y2 = x2*l
-        console.log(x1,y1,x2,y2);
-        return [x1,y1,x2,y2]
-    }
-
+    var x0 = width/2-30;                                                //中心点x轴
+    var y0 = height/2-30;                                               //中心点y轴
+    var r_list = [90,160,210,250]                                       //外层半径
+    // 中心点画圆
+    var circle = '<circle cx="30" cy="30" r="28" style="fill:white;" stroke="blue" stroke-width="2"/><text x="50%" y="50%" dy=".3em" fill="blue" text-anchor="middle">'+data.father.name+'</text>';
+    var obj = $board.createMoveObj(circle,x0,y0,data.father.id);
+    obj.setSize(60,60);
     // 圆方程
-    function c(x){
-        // (x-x0)2+(y-y0)2=r*r;
-        console.log(x0,y0,r)
+    function c(x,r){
         var y1 = y0 + Math.sqrt(r*r-(x-x0)*(x-x0));
         var y2 = y0 - Math.sqrt(r*r-(x-x0)*(x-x0));
-        console.log(y1,y2);
-        return [y1,y2]
+        if(y1 == y2){
+            return [y1];
+        }else{
+            return [y1,y2];
+        }   
     }
-    // twoPart()
-    c(500)
-    // for(i in data.children){
-    //     var children = data.children[i];
-    // }
+    // 获取等分列表(n表示一象限几等分)
+    function get_x_list(r,n){
+        var x_list = [];
+        if(n==1){
+            x_list = [x0,x0+Math.sqrt(2)*r/2,x0-Math.sqrt(2)*r/2,x0+r,x0-r];
+        }else if(n==2){
+            x_list = [x0,x0+r/2,x0-r/2,x0+Math.sqrt(3)*r/2,x0-Math.sqrt(3)*r/2,x0+r,x0-r];
+        }else if(n==3){
+            x_list = [x0,x0+r/4,x0-r/4,x0+r/2,x0-r/2,x0+3*r/4,x0-3*r/4,x0+r,x0-r];
+        }
+        return x_list;
+    }
+    // 分布算法(两部分)
+    function twoPart(r_list){
+        var l = (height-y0)/x0;
+        var point_dict = {'style1':{},'style2':{}};
+        for(m in r_list){
+            point_dict.style1[m] = [];
+            point_dict.style2[m] = [];
+            var r = r_list[m];
+            var n;
+            if(r<100){
+                n = 1;
+            }else if(r < 200){
+                n = 2;
+            }else{
+                n = 3;
+            }
+            var x_list = get_x_list(r,n);
+            for(i in x_list){
+                var x = x_list[i];
+                var y_list = c(x,r);
+                for(j in y_list){
+                    var y = y_list[j];
+                    if((height-y)/x > l){
+                        var xy = {'x':x,'y':y};
+                        point_dict.style1[m].push(xy);
+                    }else{
+                        var xy = {'x':x,'y':y};
+                        point_dict.style2[m].push(xy);
+                    }
+                }
+            }
+        }
+        return point_dict
+    }
+    //用Math.random()函数生成0~1之间的随机数与0.5比较，返回-1或1 
+    function randomsort(a, b) {  
+        return Math.random()>.5 ? -1 : 1;  
+    }  
+
+    // 数据处理
+    var point_dict = twoPart(r_list);
+    var index_dict = {'style1':{},'style2':{}};
+    // 生成随机排列索引
+    for(p in point_dict){
+        style_list = ['style1','style2'];
+        for(sl=0;sl<style_list.length;sl++){
+            for(s in point_dict[[style_list[sl]]]){
+                index_dict[style_list[sl]][s] =  [];
+                for(i=0;i<point_dict[[style_list[sl]]][s].length;i++){
+                    index_dict[[style_list[sl]]][s].push(i);
+                }
+                index_dict[[style_list[sl]]][s].sort(randomsort);
+            }
+        }
+        
+    }
+    // 画图
+    for(i in data.children){
+        var children = data.children[i];
+        var m,n,r,style,stroke_color,fill_color,text;
+        // 类型条件判断
+        if(children.style == 1){
+            style = 'style1';
+            fill_color = 'rgb(64,169,249)';
+            stroke_color = 'rgb(28,17,160)';
+        }else if(children.style == 2){
+            style = 'style2';
+            fill_color = 'rgb(142,25,126)';
+            stroke_color = 'rgb(96,6,84)';
+        }
+        var line_color = stroke_color;
+        // 亲密度条件判断
+        if(children.close >= 90){
+            m = 0;
+            r = 32;
+            text = '<text x="50%" y="50%" dy=".3em" fill="#fff" text-anchor="middle">'+children.name+'</text>';
+        }else if(children.close >= 80){
+            m = 1;
+            r = 22;
+            text = '<text x="50%" y="50%" dy=".3em" fill="#fff" text-anchor="middle" style="font-size:14px;">'+children.name+'</text>';
+        }else if(children.close >= 50){
+            m = 2;
+            r = 18;
+            text = '<text x="50%" y="50%" dy=".3em" fill="'+fill_color+'" text-anchor="middle" style="font-size:12px;">'+children.name+'</text>';
+            fill_color = '#fff';
+            line_color = '#ccc';
+        }else{
+            m = 3;
+            r = 9;
+            fill_color = '#fff';
+            text = '';
+            line_color = '#ccc';
+        }
+        var last_one = index_dict[style][m].pop();
+        var xy = point_dict[style][m][last_one];
+        if(xy){
+            var inside = '<circle cx="'+(r+1)+'" cy="'+(r+1)+'" r="'+r+'" style="fill:'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1"/>'+text;
+            var obj = $board.createMoveObj(inside,xy.x,xy.y,children.id);
+            obj.setSize((r+1)*2,(r+1)*2);
+            var line = $board.drawLine(obj.attr('id'),data.father.id);
+            line.attr({'stroke':line_color,'stroke-width':1});
+        }else{
+            console.log('节点不足：',children.id);
+        }
+    }
 }
