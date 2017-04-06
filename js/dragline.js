@@ -23,6 +23,7 @@ DragLine.CreateBoard = function(that){
     var draw_start_y = 0;                              //选中物体起始y轴
     var main_left = get_left($board);                  //画布左边距
     var main_top = get_top($board);                    //画布上边距
+    var link_move = false;                             //是否跟随主链接物体移动
     
     // 获取左边距方法
     function get_left(that){
@@ -206,7 +207,23 @@ DragLine.CreateBoard = function(that){
         var end_xx = e.pageX;
         var end_yy = e.pageY;
         if(action_status==1){
-            select_obj = {'obj':'','type':''};
+            //link1跟随link2移动
+            if(link_move&&select_obj.obj){
+                var obj_id = $(select_obj.obj).attr('id');
+                var array = get_center(select_obj.obj);
+                var draw_end_x = array[0];
+                var draw_end_y = array[1];
+                $('path[link2="'+obj_id+'"]').each(function(){
+                    var $link1 = $('#'+$(this).attr('link1'));
+                    var mx =parseInt($link1.css('left').split('px')[0]) + draw_end_x - draw_start_x;
+                    var my =parseInt($link1.css('top').split('px')[0]) + draw_end_y - draw_start_y;
+                    $link1.css({'left':mx,'top':my});
+                    var l_array = get_center($link1);
+                    var lx = l_array[0];
+                    var ly = l_array[1];
+                    move_line(this,lx,ly,1);
+                })
+            }
         }else if(action_status==2){
             if($(this).hasClass('selected')){
                 $(this).removeClass('selected');
@@ -235,9 +252,7 @@ DragLine.CreateBoard = function(that){
         var now_yy = e.pageY;
         if(select_obj.type == 'object'){        //物体移动
             var $object = $(select_obj.obj);
-            // var move_x = $object.position().left - main_left + now_xx - xx;
             var move_x =parseInt($object.css('left').split('px')[0]) + now_xx - xx;
-            // var move_y = $object.position().top - main_top+ now_yy - yy;
             var move_y =parseInt($object.css('top').split('px')[0]) + now_yy - yy;
             $object.css('left',move_x).css('top',move_y);
             //线条移动
@@ -253,9 +268,6 @@ DragLine.CreateBoard = function(that){
             $('path[link2="'+obj_id+'"]').each(function(){
                 move_line(this,center_x,center_y,2);
             })
-            //参数重新调整
-            draw_start_x = center_x
-            draw_start_y = center_y
         }else if(select_obj.type == 'point'){   //切点移动
             //点动
             var $point = $(select_obj.obj);
@@ -307,6 +319,7 @@ DragLine.CreateBoard = function(that){
             }
             line_obj = '';
         }
+
     })
     // 绑定删线条事件
     $board.on('click','.line',function() {
@@ -352,6 +365,10 @@ DragLine.CreateBoard = function(that){
             $(this).css({'border-width':width,'border-color':color});
             main_left = get_left(this);
             main_top = get_top(this);
+        },
+        // 设置跟随主物体移动状态
+        setMoveTogether:function(m){
+            link_move = m;
         },
         // 状态切换方法:0-无操作,1-移动,2-画线,3-删除
         setStatus:function(s){
@@ -609,6 +626,47 @@ DragLine.LoadingInfo = function($board,data){
         }
         return point_dict
     }
+
+    // 分布算法(三部分)
+    function threePart(r_list){
+        var point_dict = {'style1':{},'style2':{},'style3':{}};
+        console.log(x0,y0)
+        for(m in r_list){
+            point_dict.style1[m] = [];
+            point_dict.style2[m] = [];
+            point_dict.style3[m] = [];
+            var r = r_list[m];
+            var n;
+            if(r<100){
+                n = 1;
+            }else if(r < 200){
+                n = 2;
+            }else{
+                n = 3;
+            }
+            var x_list = get_x_list(r,n);
+            for(i in x_list){
+                var x = x_list[i];
+                var y_list = c(x,r);
+                for(j in y_list){
+                    var y = y_list[j];
+                    var l = ((height-y)-y0)/(x-x0);
+                    console.log(x,y,l);
+                    if((height-y)>y0&&(l<=-(Math.sqrt(3)/3)||l>Math.sqrt(3)/3)){
+                        var xy = {'x':x,'y':y};
+                        point_dict.style1[m].push(xy);
+                    }else if(x>=x0&&l<=Math.sqrt(3)/3){
+                        var xy = {'x':x,'y':y};
+                        point_dict.style2[m].push(xy);
+                    }else{
+                        var xy = {'x':x,'y':y};
+                        point_dict.style3[m].push(xy);
+                    }
+                }
+            }
+        }
+        return point_dict
+    }
     //用Math.random()函数生成0~1之间的随机数与0.5比较，返回-1或1 
     function randomsort(a, b) {  
         return Math.random()>.5 ? -1 : 1;  
@@ -682,6 +740,8 @@ DragLine.LoadingInfo = function($board,data){
         }
     }
 
+    $board.setStatus(1);
+    $board.setMoveTogether(true);
     var info = {
         // 筛选类型方法
         selectStyle:function(style,type){
