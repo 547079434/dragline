@@ -349,11 +349,16 @@ DragLine.CreateBoard = function(that){
     $board.bind("contextmenu",function(){
         return false;
     });
-
     // 添加返回对象方法
     $board.extend({
-        main_left:main_left,
-        main_top:main_top,
+        // 获取画板左边距
+        main_left:function(){
+            return get_left(this);
+        },
+        // 获取画板右边距
+        main_top:function(){
+            return get_top(this);
+        },
         // 设置画板宽高方法
         setSize:function(x,y){
             $(this).css({'width':x,'height':y});
@@ -430,6 +435,38 @@ DragLine.CreateBoard = function(that){
             var l = CreateLine($board);
             var line = draw_line(start_id,l,1,end_id);
             return line;
+        },
+        // 设置自定义物体点击双击事件
+        setClickFuc:function(fuc='',fuc2=''){
+            var timer = null;
+            $board.on('dblclick','.movebody',function(){
+                clearTimeout(timer);
+                if(fuc2){
+                    return fuc2($(this).attr('id'));
+                }
+            })
+            $board.on('click','.movebody',function(){
+                var clock;
+                if(fuc2){
+                    clock = 300;
+                }else{
+                    clock = 0;
+                }
+                clearTimeout(timer);
+                var id = $(this).attr('id');
+                timer = setTimeout(function(){
+                    if(fuc){
+                        return fuc(id);
+                    }
+                },clock)
+            })
+        },
+        // 清空画板
+        clear:function(){
+            $('.movebody').each(function(){
+                var id = $(this).attr('id');
+                delete_obj(id);
+            })
         }
     })
     return $board;
@@ -443,8 +480,8 @@ DragLine.CreateMenu = function($board){
     $board.append('<div class="dragline_menu"><ul>'+status_li+icon_li+style_select+'</ul></div>');
 
     // 初始化
-    var main_left = $board.main_left;                       //画布左边距
-    var main_top = $board.main_top;                         //画布上边距
+    var main_left = $board.main_left();                     //画布左边距
+    var main_top = $board.main_top();                       //画布上边距
     var move_obj = '';                                      //移动物体
     var btn_obj = '';                                       //已点击按钮
     var xx = 0;                                             //鼠标x轴
