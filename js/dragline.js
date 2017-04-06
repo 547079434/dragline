@@ -324,7 +324,7 @@ DragLine.CreateBoard = function(that){
     })
     // 绑定切点显示事件
     $board.on('mouseenter','.line',function(e) { 
-        if(action_status==1||action_status==2){
+        if(action_status==2){
             var id = $(this).attr('id');
             $('.point1[for="'+id+'"]').css('display','block');
             $('.point2[for="'+id+'"]').css('display','block');
@@ -634,7 +634,7 @@ DragLine.LoadingInfo = function($board,data){
     // 画图
     for(i in data.children){
         var children = data.children[i];
-        var m,n,r,style,stroke_color,fill_color,text;
+        var m,r,style,stroke_color,fill_color,text;
         // 类型条件判断
         if(children.style == 1){
             style = 'style1';
@@ -687,16 +687,20 @@ DragLine.LoadingInfo = function($board,data){
         selectStyle:function(style,type){
             $('.movebody[style_name="'+style+'"]').each(function(){
                 if(type==1){
-                    $(this).hide();
+                    // $(this).hide();
+                    $(this).css('opacity',0.2);
                 }else{
-                    $(this).show();
+                    // $(this).show();
+                    $(this).css('opacity',1);
                 }
                 var this_id = $(this).attr('id');
                 $('path[link1="'+this_id+'"]').each(function(){
                     if(type==1){
-                        $(this).hide();
+                        // $(this).hide();
+                        $(this).css('opacity',0.2);
                     }else{
-                        $(this).show();
+                        // $(this).show();
+                        $(this).css('opacity',1);
                     }
                 })
             })
@@ -709,14 +713,18 @@ DragLine.LoadingInfo = function($board,data){
                     close = parseInt(close);
                     var this_id = $(this).attr('id');
                     if(close<=max && close>=min){
-                        $(this).show();
+                        // $(this).show();
+                        $(this).css('opacity',1);
                         $('path[link1="'+this_id+'"]').each(function(){
-                            $(this).show();
+                            // $(this).show();
+                            $(this).css('opacity',1);
                         })
                     }else{
-                        $(this).hide();
+                        // $(this).hide();
+                        $(this).css('opacity',0.2);
                         $('path[link1="'+this_id+'"]').each(function(){
-                            $(this).hide();
+                            // $(this).hide();
+                            $(this).css('opacity',0.2);
                         })
                     }
                 }
