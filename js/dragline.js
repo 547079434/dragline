@@ -603,10 +603,12 @@ DragLine.LoadingInfo = function($board,data){
     var x0 = width/2-30;                                                //中心点x轴
     var y0 = height/2-30;                                               //中心点y轴
     var r_list = [90,160,210,250]                                       //外层半径
+    var partNum = 2                                                     //模块数量 (目前支持2、3分法)
     // 中心点画圆
-    var circle = '<circle cx="30" cy="30" r="28" style="fill:white;" stroke="blue" stroke-width="2"/><text x="50%" y="50%" dy=".3em" fill="blue" text-anchor="middle">'+data.father.name+'</text>';
+    var circle = '<circle cx="30" cy="30" r="28" style="fill:white;" stroke="rgb(0,82,137)" stroke-width="2"/><text x="50%" y="50%" dy=".3em" fill="rgb(0,82,137)" text-anchor="middle">'+data.father.name+'</text>';
     var obj = $board.createMoveObj(circle,x0,y0,data.father.id);
     obj.setSize(60,60);
+
     // 圆方程
     function c(x,r){
         var y1 = y0 + Math.sqrt(r*r-(x-x0)*(x-x0));
@@ -618,7 +620,15 @@ DragLine.LoadingInfo = function($board,data){
         }   
     }
     // 获取等分列表(n表示一象限几等分)
-    function get_x_list(r,n){
+    function get_x_list(r){
+        var n;
+        if(r<100){
+            n = 1;
+        }else if(r < 200){
+            n = 2;
+        }else{
+            n = 3;
+        }
         var x_list = [];
         if(n==1){
             x_list = [x0,x0+Math.sqrt(2)*r/2,x0-Math.sqrt(2)*r/2,x0+r,x0-r];
@@ -629,115 +639,86 @@ DragLine.LoadingInfo = function($board,data){
         }
         return x_list;
     }
-    // 分布算法(两部分)
-    function twoPart(r_list){
-        var l = (height-y0)/x0;
-        var point_dict = {'style1':{},'style2':{}};
+    // 分布算法
+    function cutPart(r_list,part_num){
+        var point_dict = {};
+        for(p=1;p<=partNum;p++){
+            point_dict[p] = {};
+        }
         for(m in r_list){
-            point_dict.style1[m] = [];
-            point_dict.style2[m] = [];
-            var r = r_list[m];
-            var n;
-            if(r<100){
-                n = 1;
-            }else if(r < 200){
-                n = 2;
-            }else{
-                n = 3;
+            for(key in point_dict){
+                point_dict[key][m] = [];
             }
-            var x_list = get_x_list(r,n);
+            var r = r_list[m];
+            var x_list = get_x_list(r);
             for(i in x_list){
                 var x = x_list[i];
                 var y_list = c(x,r);
                 for(j in y_list){
+                    // 得到x、y值,设置坐标分布类型
                     var y = y_list[j];
-                    if((height-y)/x > l){
-                        var xy = {'x':x,'y':y};
-                        point_dict.style1[m].push(xy);
-                    }else{
-                        var xy = {'x':x,'y':y};
-                        point_dict.style2[m].push(xy);
+                    var xy = {'x':x,'y':y};
+                    if(part_num==2){                         //二等分
+                        var l = (height-y0)/x0;
+                        if((height-y)/x > l){
+                            point_dict[1][m].push(xy);
+                        }else{
+                            point_dict[2][m].push(xy);
+                        }
+                    }else if(part_num==3){                   //三等分
+                        var l = (y0-y)/(x-x0);
+                        if(y<y0&&(l<=-(Math.sqrt(3)/3)||l>Math.sqrt(3)/3)){
+                            point_dict[1][m].push(xy);
+                        }else if(x>=x0&&l<=Math.sqrt(3)/3){
+                            point_dict[2][m].push(xy);
+                        }else{
+                            point_dict[3][m].push(xy);
+                        }
                     }
+                    
                 }
             }
         }
         return point_dict
     }
-
-    // 分布算法(三部分)
-    function threePart(r_list){
-        var point_dict = {'style1':{},'style2':{},'style3':{}};
-        console.log(x0,y0)
-        for(m in r_list){
-            point_dict.style1[m] = [];
-            point_dict.style2[m] = [];
-            point_dict.style3[m] = [];
-            var r = r_list[m];
-            var n;
-            if(r<100){
-                n = 1;
-            }else if(r < 200){
-                n = 2;
-            }else{
-                n = 3;
-            }
-            var x_list = get_x_list(r,n);
-            for(i in x_list){
-                var x = x_list[i];
-                var y_list = c(x,r);
-                for(j in y_list){
-                    var y = y_list[j];
-                    var l = ((height-y)-y0)/(x-x0);
-                    console.log(x,y,l);
-                    if((height-y)>y0&&(l<=-(Math.sqrt(3)/3)||l>Math.sqrt(3)/3)){
-                        var xy = {'x':x,'y':y};
-                        point_dict.style1[m].push(xy);
-                    }else if(x>=x0&&l<=Math.sqrt(3)/3){
-                        var xy = {'x':x,'y':y};
-                        point_dict.style2[m].push(xy);
-                    }else{
-                        var xy = {'x':x,'y':y};
-                        point_dict.style3[m].push(xy);
-                    }
-                }
-            }
-        }
-        return point_dict
-    }
+    
     //用Math.random()函数生成0~1之间的随机数与0.5比较，返回-1或1 
     function randomsort(a, b) {  
         return Math.random()>.5 ? -1 : 1;  
     }  
 
     // 数据处理
-    var point_dict = twoPart(r_list);
-    var index_dict = {'style1':{},'style2':{}};
+    var point_dict = cutPart(r_list,partNum);
+    var index_dict = {};
     // 生成随机排列索引
     for(p in point_dict){
-        style_list = ['style1','style2'];
-        for(sl=0;sl<style_list.length;sl++){
-            for(s in point_dict[[style_list[sl]]]){
-                index_dict[style_list[sl]][s] =  [];
-                for(i=0;i<point_dict[[style_list[sl]]][s].length;i++){
-                    index_dict[[style_list[sl]]][s].push(i);
+        for(p=1;p<=partNum;p++){
+            if(!index_dict[p]){
+                index_dict[p] = {};
+            }
+            for(s in point_dict[p]){
+                index_dict[p][s] =  [];
+                for(i=0;i<point_dict[p][s].length;i++){
+                    index_dict[p][s].push(i);
                 }
-                index_dict[[style_list[sl]]][s].sort(randomsort);
+                index_dict[p][s].sort(randomsort);
             }
         }
-        
     }
     // 画图
     for(i in data.children){
         var children = data.children[i];
-        var m,r,style,stroke_color,fill_color,text;
+        var style = children.style;
+        var m,r,stroke_color,fill_color,text;
         // 类型条件判断
-        if(children.style == 1){
-            style = 'style1';
+        if(style == 1){
             fill_color = 'rgb(64,169,249)';
             stroke_color = 'rgb(28,17,160)';
-        }else if(children.style == 2){
-            style = 'style2';
+        }else if(style == 2){
             fill_color = 'rgb(142,25,126)';
+            stroke_color = 'rgb(96,6,84)';
+        }else if(style == 3){
+            fill_color = 'orange';
             stroke_color = 'rgb(96,6,84)';
         }
         var line_color = stroke_color;
@@ -763,17 +744,20 @@ DragLine.LoadingInfo = function($board,data){
             text = '';
             line_color = '#ccc';
         }
-        var last_one = index_dict[style][m].pop();
-        var xy = point_dict[style][m][last_one];
-        if(xy){
-            var inside = '<circle cx="'+(r+1)+'" cy="'+(r+1)+'" r="'+r+'" style="fill:'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1"/>'+text;
-            var obj = $board.createMoveObj(inside,xy.x,xy.y,children.id);
-            obj.setSize((r+1)*2,(r+1)*2);
-            obj.attr({'style_name':children.style,'close':children.close});
-            var line = $board.drawLine(obj.attr('id'),data.father.id);
-            line.attr({'stroke':line_color,'stroke-width':1});
-        }else{
-            console.log('节点不足：',children.id);
+        // 画图方法
+        if(index_dict[style]){
+            var last_one = index_dict[style][m].pop();
+            var xy = point_dict[style][m][last_one];
+            if(xy){
+                var inside = '<circle cx="'+(r+1)+'" cy="'+(r+1)+'" r="'+r+'" style="fill:'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1"/>'+text;
+                var obj = $board.createMoveObj(inside,xy.x,xy.y,children.id);
+                obj.setSize((r+1)*2,(r+1)*2);
+                obj.attr({'style_name':children.style,'close':children.close});
+                var line = $board.drawLine(obj.attr('id'),data.father.id);
+                line.attr({'stroke':line_color,'stroke-width':1});
+            }else{
+                console.log('节点不足：',children.id);
+            }
         }
     }
 
@@ -784,19 +768,15 @@ DragLine.LoadingInfo = function($board,data){
         selectStyle:function(style,type){
             $('.movebody[style_name="'+style+'"]').each(function(){
                 if(type==1){
-                    // $(this).hide();
                     $(this).css('opacity',0.2);
                 }else{
-                    // $(this).show();
                     $(this).css('opacity',1);
                 }
                 var this_id = $(this).attr('id');
                 $('path[link1="'+this_id+'"]').each(function(){
                     if(type==1){
-                        // $(this).hide();
                         $(this).css('opacity',0.2);
                     }else{
-                        // $(this).show();
                         $(this).css('opacity',1);
                     }
                 })
@@ -810,17 +790,13 @@ DragLine.LoadingInfo = function($board,data){
                     close = parseInt(close);
                     var this_id = $(this).attr('id');
                     if(close<=max && close>=min){
-                        // $(this).show();
                         $(this).css('opacity',1);
                         $('path[link1="'+this_id+'"]').each(function(){
-                            // $(this).show();
                             $(this).css('opacity',1);
                         })
                     }else{
-                        // $(this).hide();
                         $(this).css('opacity',0.2);
                         $('path[link1="'+this_id+'"]').each(function(){
-                            // $(this).hide();
                             $(this).css('opacity',0.2);
                         })
                     }
