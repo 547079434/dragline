@@ -64,15 +64,15 @@ DragLine.CreateBoard = function(that){
     // 添加初始线条与切线切点方法
     function CreateLine(that){
         var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');   //创建svg元素
-        $(path).addClass('line').attr({'stroke':'black','stroke-width':'2','fill':'none','d':'','id':'path_'+draw_path_id});
+        $(path).attr({'class':'line','stroke':'black','stroke-width':'2','fill':'none','d':'','id':'path_'+draw_path_id});
         var point1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');   
-        $(point1).addClass('point1').attr({'cx':'','cy':'','r':'4','fill':'red','for':'path_'+draw_path_id});
+        $(point1).attr({'class':'point1','cx':'','cy':'','r':'4','fill':'red','for':'path_'+draw_path_id});
         var p_line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');   
-        $(p_line1).addClass('line1').attr({'x1':'','y1':'','x2':'','y2':'','stroke':'red','stroke-width':'1','for':'path_'+draw_path_id});
+        $(p_line1).attr({'class':'line1','x1':'','y1':'','x2':'','y2':'','stroke':'red','stroke-width':'1','for':'path_'+draw_path_id});
         var point2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');   
-        $(point2).addClass('point2').attr({'cx':'','cy':'','r':'4','fill':'red','for':'path_'+draw_path_id});
+        $(point2).attr({'class':'point2','cx':'','cy':'','r':'4','fill':'red','for':'path_'+draw_path_id});
         var p_line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');   
-        $(p_line2).addClass('line2').attr({'x1':'','y1':'','x2':'','y2':'','stroke':'red','stroke-width':'1','for':'path_'+draw_path_id});
+        $(p_line2).attr({'class':'line2','x1':'','y1':'','x2':'','y2':'','stroke':'red','stroke-width':'1','for':'path_'+draw_path_id});
         $(that).children('.lines').append(path,point1,point2,p_line1,p_line2);
         var $line = $('#path_'+draw_path_id);
         draw_path_id += 1;

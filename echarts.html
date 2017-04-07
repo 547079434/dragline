@@ -5,6 +5,7 @@
     <title>Echarts</title>
     <script src="js/echarts.min.js"></script>
     <script type="text/javascript" src="js/jquery-3.2.0.min.js"></script>
+    <script type="text/javascript" src="js/world.js"></script>
     <style type="text/css">
     html,body,#main{margin: 0;height: 100%;width: 100%;}
     </style>
@@ -311,17 +312,16 @@
         series: series
     };
         
-    $.get('json/world.json', function (chinaJson) {
-        echarts.registerMap('world', chinaJson);
-        var chart = echarts.init(document.getElementById('main'));
-        // chart.setOption({
-        //     series: [{
-        //         type: 'map',
-        //         map: 'world'
-        //     }]
-        // });
-        chart.setOption(option); 
-    });
+
+    echarts.registerMap('world', worldjson);
+    var chart = echarts.init(document.getElementById('main'));
+    // chart.setOption({
+    //     series: [{
+    //         type: 'map',
+    //         map: 'world'
+    //     }]
+    // });
+    chart.setOption(option); 
     </script>
 </body>
 </html>
