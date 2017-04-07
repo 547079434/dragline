@@ -319,7 +319,6 @@ DragLine.CreateBoard = function(that){
             }
             line_obj = '';
         }
-
     })
     // 绑定删线条事件
     $board.on('click','.line',function() {
@@ -675,14 +674,12 @@ DragLine.LoadingInfo = function($board,data){
                             point_dict[3][m].push(xy);
                         }
                     }
-                    
                 }
             }
         }
         return point_dict
     }
-    
-    //用Math.random()函数生成0~1之间的随机数与0.5比较，返回-1或1 
+    // 随机排序方法
     function randomsort(a, b) {  
         return Math.random()>.5 ? -1 : 1;  
     }  
@@ -691,18 +688,16 @@ DragLine.LoadingInfo = function($board,data){
     var point_dict = cutPart(r_list,partNum);
     var index_dict = {};
     // 生成随机排列索引
-    for(p in point_dict){
-        for(p=1;p<=partNum;p++){
-            if(!index_dict[p]){
-                index_dict[p] = {};
+    for(p=1;p<=partNum;p++){
+        if(!index_dict[p]){
+            index_dict[p] = {};
+        }
+        for(s in point_dict[p]){
+            index_dict[p][s] =  [];
+            for(i=0;i<point_dict[p][s].length;i++){
+                index_dict[p][s].push(i);
             }
-            for(s in point_dict[p]){
-                index_dict[p][s] =  [];
-                for(i=0;i<point_dict[p][s].length;i++){
-                    index_dict[p][s].push(i);
-                }
-                index_dict[p][s].sort(randomsort);
-            }
+            index_dict[p][s].sort(randomsort);
         }
     }
     // 画图
@@ -760,9 +755,12 @@ DragLine.LoadingInfo = function($board,data){
             }
         }
     }
-
+    
     $board.setStatus(1);
     $board.setMoveTogether(true);
+    $board.css('display','none');
+    $board.fadeIn(1000);
+
     var info = {
         // 筛选类型方法
         selectStyle:function(style,type){
