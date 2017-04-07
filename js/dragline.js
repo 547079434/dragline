@@ -604,7 +604,7 @@ DragLine.LoadingInfo = function($board,data){
     var r_list = [90,160,210,250]                                       //外层半径
     var partNum = 2                                                     //模块数量 (目前支持2、3分法)
     // 中心点画圆
-    var circle = '<circle cx="30" cy="30" r="28" style="fill:white;" stroke="rgb(0,82,137)" stroke-width="2"/><text x="50%" y="50%" dy=".3em" fill="rgb(0,82,137)" text-anchor="middle">'+data.father.name+'</text>';
+    var circle = '<circle cx="30" cy="30" r="28" style="fill:white;" stroke="rgb(0,82,137)" stroke-width="2"></circle><text x="50%" y="50%" dy=".3em" fill="rgb(0,82,137)" text-anchor="middle">'+data.father.name+'</text>';
     var obj = $board.createMoveObj(circle,x0,y0,data.father.id);
     obj.setSize(60,60);
 
@@ -744,7 +744,7 @@ DragLine.LoadingInfo = function($board,data){
             var last_one = index_dict[style][m].pop();
             var xy = point_dict[style][m][last_one];
             if(xy){
-                var inside = '<circle cx="'+(r+1)+'" cy="'+(r+1)+'" r="'+r+'" style="fill:'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1"/>'+text;
+                var inside = '<circle cx="'+(r+1)+'" cy="'+(r+1)+'" r="'+r+'" style="fill:'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1"></circle>'+text;
                 var obj = $board.createMoveObj(inside,xy.x,xy.y,children.id);
                 obj.setSize((r+1)*2,(r+1)*2);
                 obj.attr({'style_name':children.style,'close':children.close});
