@@ -595,14 +595,14 @@ DragLine.CreateMenu = function($board){
 }
 
 // 生成单一指向关系图
-DragLine.LoadingInfo = function($board,data){
+DragLine.LoadingInfo = function($board,data,num=1){
     // 获取变量
     var width = $board.width();                                         //画板宽度
     var height = $board.height();                                       //画板高度
     var x0 = width/2-30;                                                //中心点x轴
     var y0 = height/2-30;                                               //中心点y轴
-    var r_list = [90,160,210,250]                                       //外层半径
-    var partNum = 2                                                     //模块数量 (目前支持2、3分法)
+    var r_list = [80,140,195,245]                                       //外层半径
+    var partNum = num                                                   //模块数量 (目前支持2、3分法)
     // 中心点画圆
     var circle = '<circle cx="30" cy="30" r="28" style="fill:white;" stroke="rgb(0,82,137)" stroke-width="2"></circle><text x="50%" y="50%" dy=".3em" fill="rgb(0,82,137)" text-anchor="middle">'+data.father.name+'</text>';
     var obj = $board.createMoveObj(circle,x0,y0,data.father.id);
@@ -618,25 +618,44 @@ DragLine.LoadingInfo = function($board,data){
             return [y1,y2];
         }   
     }
-    // 获取等分列表(n表示一象限几等分)
+    // 获取等分列表
     function get_x_list(r){
         var n;
         if(r<100){
             n = 1;
-        }else if(r < 200){
+        }else if(r < 120){
             n = 2;
-        }else{
+        }else if(r < 160){
             n = 3;
+        }else if(r < 220){
+            n = 4;
+        }else{
+            n = 5;
         }
         var x_list = [];
-        if(n==1){
+        if(n==1){               // 总点数：8
             x_list = [x0,x0+Math.sqrt(2)*r/2,x0-Math.sqrt(2)*r/2,x0+r,x0-r];
-        }else if(n==2){
+        }else if(n==2){         // 总点数：12
             x_list = [x0,x0+r/2,x0-r/2,x0+Math.sqrt(3)*r/2,x0-Math.sqrt(3)*r/2,x0+r,x0-r];
-        }else if(n==3){
-            x_list = [x0,x0+r/4,x0-r/4,x0+r/2,x0-r/2,x0+3*r/4,x0-3*r/4,x0+r,x0-r];
+        }else if(n==3){         // 总点数：20
+            x_list = [x0,x0+3*r/10,x0-3*r/10,x0+4*r/7,x0-4*r/7,x0+4*r/5,x0-4*r/5,x0+18*r/19,x0-18*r/19,x0+r,x0-r];
+        }else if(n==4){         // 总点数：28
+            x_list = [x0,x0+r/5,x0-r/5,x0+2*r/5,x0-2*r/5,x0+3*r/5,x0-3*r/5,x0+3.8*r/5,x0-3.8*r/5,x0+9*r/10,x0-9*r/10,x0+9.8*r/10,x0-9.8*r/10,x0+r,x0-r];
+        }else{                  // 总点数：44
+            x_list = [x0,x0+1.1*r/9,x0-r/9,x0+2*r/9,x0-2*r/9,x0+3*r/9,x0-3*r/9,x0+4*r/9,x0-4*r/9,x0+5*r/9,x0-5*r/9,x0+6*r/9,x0-6*r/9,x0+7*r/9,x0-7*r/9,x0+7.8*r/9,x0-7.8*r/9,x0+8.5*r/9,x0-8.5*r/9,x0+8.9*r/9,x0-8.9*r/9,x0+r,x0-r];
         }
         return x_list;
+    }
+    // 随机坐标
+    function random_position(x,y){
+        if(Math.random()>0.5){
+            x += Math.random()*10;
+            y += Math.random()*10;
+        }else{
+            x -= Math.random()*10;
+            y -= Math.random()*10;
+        }
+        return [x,y];
     }
     // 分布算法
     function cutPart(r_list,part_num){
@@ -656,15 +675,18 @@ DragLine.LoadingInfo = function($board,data){
                 for(j in y_list){
                     // 得到x、y值,设置坐标分布类型
                     var y = y_list[j];
-                    var xy = {'x':x,'y':y};
-                    if(part_num==2){                         //二等分
+                    var random_xy = random_position(x,y)
+                    var xy = {'x':random_xy[0],'y':random_xy[1]};
+                    if(part_num==1){                               //不分
+                        point_dict[1][m].push(xy);
+                    }else if(part_num==2){                         //二等分
                         var l = (height-y0)/x0;
                         if((height-y)/x > l){
                             point_dict[1][m].push(xy);
                         }else{
                             point_dict[2][m].push(xy);
                         }
-                    }else if(part_num==3){                   //三等分
+                    }else if(part_num==3){                          //三等分
                         var l = (y0-y)/(x-x0);
                         if(y<y0&&(l<=-(Math.sqrt(3)/3)||l>Math.sqrt(3)/3)){
                             point_dict[1][m].push(xy);
@@ -720,11 +742,11 @@ DragLine.LoadingInfo = function($board,data){
         // 亲密度条件判断
         if(children.close >= 90){
             m = 0;
-            r = 32;
+            r = 26;
             text = '<text x="50%" y="50%" dy=".3em" fill="#fff" text-anchor="middle">'+children.name+'</text>';
         }else if(children.close >= 80){
             m = 1;
-            r = 22;
+            r = 20;
             text = '<text x="50%" y="50%" dy=".3em" fill="#fff" text-anchor="middle" style="font-size:14px;">'+children.name+'</text>';
         }else if(children.close >= 50){
             m = 2;
