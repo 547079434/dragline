@@ -5,7 +5,7 @@ var DragLine = function(){
 
 // 创建画布
 DragLine.CreateBoard = function(that){
-    $(that).append('<div id="dragline_board"><svg class="lines" xmlns="http://www.w3.org/2000/svg"></svg></div>');
+    $(that).append('<div id="dragline_board"><svg class="lines" xmlns="http://www.w3.org/2000/svg"></svg><ul class="rightMenu"><li class="addTag" value="top">加上标签</li><li class="addTag" value="bottom">加下标签</li><li class="addTag" value="left">加左标签</li><li class="addTag" value="right">加右标签</li><li id="delTag">删除标签</li></ul></div>');
     
     // 初始化
     var $board = $('#dragline_board');                 //画布
@@ -24,6 +24,7 @@ DragLine.CreateBoard = function(that){
     var main_left = get_left($board);                  //画布左边距
     var main_top = get_top($board);                    //画布上边距
     var link_move = false;                             //是否跟随主链接物体移动
+    var right_menu = false;                            //右击菜单是否显示
     
     // 获取左边距方法
     function get_left(that){
@@ -37,6 +38,10 @@ DragLine.CreateBoard = function(that){
         var border_top = parseInt($(that).css('borderTopWidth').split('px')[0]);
         return position_top+border_top; 
     }
+    // 获取px数值
+    function get_px_num(px){
+        return parseInt(px.split('px')[0]);
+    }
     // 获取物体定位点坐标方法(无定位点，则选取中心点)
     function get_center(that){
         var x,y;
@@ -44,12 +49,14 @@ DragLine.CreateBoard = function(that){
         var top = $(that).position().top;
         var width = $(that).width();
         var height = $(that).height();
+        var padding_left = parseInt($(that).css('padding-left').split('px')[0]);
+        var padding_top = parseInt($(that).css('padding-top').split('px')[0]);
         if($(that).hasClass('fix_point')){
-            x = left+parseInt($(that).attr('fix-x'))-main_left;
-            y = top+parseInt($(that).attr('fix-y'))-main_top;
+            x = left+parseInt($(that).attr('fix-x'))-main_left+padding_left;
+            y = top+parseInt($(that).attr('fix-y'))-main_top+padding_top;
         }else{
-            x = left+width/2-main_left;
-            y = top+height/2-main_top;
+            x = left+width/2-main_left+padding_left;
+            y = top+height/2-main_top+padding_top;
         }
         return [x,y]
     }
@@ -181,6 +188,65 @@ DragLine.CreateBoard = function(that){
         })
         $('#'+id).remove();
     }
+    // 生成定位点
+    function createFix(that,x,y){
+        $(that).addClass('fix_point');
+        $(that).attr({'fix-x':x,'fix-y':y});
+    }
+    // 删除定位点
+    function delFix(that){
+        $(that).removeClass('fix_point');
+        $(that).attr({'fix-x':'','fix-y':''});
+    }
+    // 添加标签
+    function addTag(obj,tag_name='标签',position='right'){
+        var alreay = obj.children('.tag').length;
+        if(!alreay){
+            var tag = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            var tag_width = 46;
+            var tag_height = 18;
+            var obj_width = obj.width();
+            var obj_height = obj.height();
+            if(position=='right'){
+                var x = obj_width;
+                var y = obj_height/2;
+            }else if(position=='left'){
+                var x = 0;
+                var y = obj_height/2;
+            }else if(position=='top'){
+                var x = obj_width/2;
+                var y = 0;
+            }else if(position=='bottom'){
+                var x = obj_width/2;
+                var y = obj_height;
+            }else{
+                var x = obj_width;
+                var y = obj_height/2;
+            }
+            $(tag).attr({'class':'tag','width':tag_width,'height':tag_height,'x':x-tag_width/2,'y':y-tag_height/2,'rx':'8','ry':'8','fill':'#F67D23','stroke':'none'});
+            $(text).attr({'class':'tag_text','x':x,'y':y+1,'stroke':'none','fill':'#fff','style':'font-size:12px;','text-anchor':"middle",'dominant-baseline': 'middle'}).text(tag_name);
+            var new_left = get_px_num(obj.css('left'))-tag_width/2;
+            var new_top = get_px_num(obj.css('top'))-tag_width/2;
+            obj.css({'padding':tag_width/2,'left':new_left,'top':new_top});
+            obj.append(tag,text);
+            createFix(obj,x,y)
+        }
+    }
+    // 删除标签
+    function delTag(obj){
+        delFix(obj);
+        obj.children('.tag').each(function(){
+            $(this).remove();
+        })
+        obj.children('.tag_text').each(function(){
+            $(this).remove();
+        })
+        var new_left = get_px_num(obj.css('left'))+get_px_num(obj.css('padding-left'));
+        var new_top = get_px_num(obj.css('top'))+get_px_num(obj.css('padding-top'));
+        obj.css({'padding':0,'left':new_left,'top':new_top});
+    }
+    
 
     // 绑定选中移动物体事件
     $board.on('mousedown','.movebody',function(e) {
@@ -189,53 +255,61 @@ DragLine.CreateBoard = function(that){
         var array = get_center(this);
         draw_start_x = array[0];
         draw_start_y = array[1];
-        if(action_status==1){
-            select_obj.obj = this;
-            select_obj.type = 'object';
-        }else if(action_status==2){
-            if($(this).hasClass('selected')){
-                $(this).removeClass('selected');
-            }else{
-                draw_id = $(this).attr('id');
-                line_obj = CreateLine($board);
-                $(this).addClass('selected');
+        if(e.which==1){
+            if(action_status==1){
+                select_obj.obj = this;
+                select_obj.type = 'object';
+            }else if(action_status==2){
+                if($(this).hasClass('selected')){
+                    $(this).removeClass('selected');
+                }else{
+                    draw_id = $(this).attr('id');
+                    line_obj = CreateLine($board);
+                    $(this).addClass('selected');
+                }
             }
+        }else if(e.which==3 && right_menu){
+            $('.rightMenu').css({'left':draw_start_x,'top':draw_start_y});
+            $('.rightMenu').show();
+            draw_id = $(this).attr('id');
         }
     }); 
     // 绑定画线事件
     $board.on('mouseup','.movebody',function(e) { 
         var end_xx = e.pageX;
         var end_yy = e.pageY;
-        if(action_status==1){
-            //link1跟随link2移动
-            if(link_move&&select_obj.obj){
-                var obj_id = $(select_obj.obj).attr('id');
-                var array = get_center(select_obj.obj);
-                var draw_end_x = array[0];
-                var draw_end_y = array[1];
-                $('path[link2="'+obj_id+'"]').each(function(){
-                    var $link1 = $('#'+$(this).attr('link1'));
-                    var mx =parseInt($link1.css('left').split('px')[0]) + draw_end_x - draw_start_x;
-                    var my =parseInt($link1.css('top').split('px')[0]) + draw_end_y - draw_start_y;
-                    $link1.css({'left':mx,'top':my});
-                    var l_array = get_center($link1);
-                    var lx = l_array[0];
-                    var ly = l_array[1];
-                    move_line(this,lx,ly,1);
-                })
-            }
-        }else if(action_status==2){
-            if($(this).hasClass('selected')){
-                $(this).removeClass('selected');
-            }else{
-                // 判断是否画过线
-                var obj2_id = $(this).attr('id');
-                var alreay = $('path[link1="'+draw_id+'"][link2="'+obj2_id+'"]').length+$('path[link1="'+obj2_id+'"][link2="'+draw_id+'"]').length;
-                if(!alreay){
-                    draw_line(draw_id,line_obj,1,obj2_id);
+        if(e.which==1){
+            if(action_status==1){
+                //link1跟随link2移动
+                if(link_move&&select_obj.obj){
+                    var obj_id = $(select_obj.obj).attr('id');
+                    var array = get_center(select_obj.obj);
+                    var draw_end_x = array[0];
+                    var draw_end_y = array[1];
+                    $('path[link2="'+obj_id+'"]').each(function(){
+                        var $link1 = $('#'+$(this).attr('link1'));
+                        var mx =parseInt($link1.css('left').split('px')[0]) + draw_end_x - draw_start_x;
+                        var my =parseInt($link1.css('top').split('px')[0]) + draw_end_y - draw_start_y;
+                        $link1.css({'left':mx,'top':my});
+                        var l_array = get_center($link1);
+                        var lx = l_array[0];
+                        var ly = l_array[1];
+                        move_line(this,lx,ly,1);
+                    })
                 }
-                $('.movebody').removeClass('selected');
-            }   
+            }else if(action_status==2){
+                if($(this).hasClass('selected')){
+                    $(this).removeClass('selected');
+                }else{
+                    // 判断是否画过线
+                    var obj2_id = $(this).attr('id');
+                    var alreay = $('path[link1="'+draw_id+'"][link2="'+obj2_id+'"]').length+$('path[link1="'+obj2_id+'"][link2="'+draw_id+'"]').length;
+                    if(!alreay){
+                        draw_line(draw_id,line_obj,1,obj2_id);
+                    }
+                    $('.movebody').removeClass('selected');
+                }   
+            }
         }
     }); 
     // 绑定选中切点事件
@@ -320,6 +394,10 @@ DragLine.CreateBoard = function(that){
             line_obj = '';
         }
     })
+    // 绑定鼠标抬起重新初始化事件
+    $board.click(function(e) {  
+        $('.rightMenu').hide();
+    })
     // 绑定删线条事件
     $board.on('click','.line',function() {
         if(action_status == 3){
@@ -328,7 +406,7 @@ DragLine.CreateBoard = function(that){
         }
     })
     // 绑定删物体事件
-    $board.on('click','.movebody',function() {
+    $board.on('click','.movebody',function(e) {
         if(action_status == 3){
             var id = $(this).attr('id');
             delete_obj(id);
@@ -348,6 +426,17 @@ DragLine.CreateBoard = function(that){
     $board.bind("contextmenu",function(){
         return false;
     });
+    // 添加标签
+    $board.on('click','.addTag',function(){
+        var obj = $('#'+draw_id);
+        var position = $(this).attr('value');
+        addTag(obj,'标签',position);
+    })
+    // 删除标签
+    $board.on('click','#delTag',function(){
+        var obj = $('#'+draw_id);
+        delTag(obj);
+    })
     // 添加返回对象方法
     $board.extend({
         // 获取画板左边距
@@ -373,6 +462,10 @@ DragLine.CreateBoard = function(that){
         // 设置跟随主物体移动状态
         setMoveTogether:function(m){
             link_move = m;
+        },
+        // 设置右击菜单是否显示
+        setRightMenu:function(m){
+            right_menu = m;
         },
         // 状态切换方法:0-无操作,1-移动,2-画线,3-删除
         setStatus:function(s){
@@ -420,8 +513,7 @@ DragLine.CreateBoard = function(that){
                 },
                 // 设置定位点位置方法
                 setFix:function(x,y){
-                    $(this).addClass('fix_point');
-                    $(this).attr({'fix-x':x,'fix-y':y});
+                    createFix(this,x,y);
                 }
             })
             if(!id){
@@ -477,6 +569,7 @@ DragLine.CreateMenu = function($board){
     var icon_li = '<li id="addCircle" class="li_icon">○</li><li id="addRect" class="li_icon">□</li><li id="addTriangle" class="li_icon">△</li><div class="menuline"></div>';
     var style_select = '<select id="strokeStyle"><option value="0">—</option><option value="1">- -</option></select><select id="strokeColor"><option value="black" style="color:black">——</option><option value="red" style="color:red">——</option><option value="green" style="color:green">——</option><option value="yellow" style="color:yellow">——</option></select><select id="fillColor"><option value="none">无</option><option value="black" style="color:black">■</option><option value="red" style="color:red">■</option><option value="green" style="color:green">■</option><option value="yellow" style="color:yellow">■</option></select>';
     $board.append('<div class="dragline_menu"><ul>'+status_li+icon_li+style_select+'</ul></div>');
+    $board.setRightMenu(true);
 
     // 初始化
     var main_left = $board.main_left();                     //画布左边距
@@ -780,6 +873,7 @@ DragLine.LoadingInfo = function($board,data,num=1){
     
     $board.setStatus(1);
     $board.setMoveTogether(true);
+    $board.setRightMenu(false);
     $board.css('display','none');
     $board.fadeIn(1000);
 
