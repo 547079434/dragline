@@ -11,7 +11,7 @@ DragLine.CreateBoard = function(that){
     var $board = $('#dragline_board');                 //画布
     var draw_path_id = 1;                              //初始化线条id
     var draw_obj_id = 1;                               //初始化物体id
-    var action_status = 0;                             //操作状态码, 0-无操作,1-移动,2-画线,3-删除
+    var action_status = 0;                             //操作状态码, 0-无,1-移动,2-画线,3-删除,4-备注
     var stroke_style = 0;                              //线条状态码, 0-实线,1-虚线
     var stroke_color = 'black';                        //线条颜色
     var xx = 0;                                        //鼠标x轴
@@ -24,7 +24,8 @@ DragLine.CreateBoard = function(that){
     var main_left = get_left($board);                  //画布左边距
     var main_top = get_top($board);                    //画布上边距
     var link_move = false;                             //是否跟随主链接物体移动
-    var right_menu = false;                            //右击菜单是否显示
+    var right_menu = false;                            //右击菜单是否显示(标签)
+    var remark_status = true;                          //是否开启备注功能
     
     // 获取左边距方法
     function get_left(that){
@@ -126,6 +127,10 @@ DragLine.CreateBoard = function(that){
         $point2.attr({'cx':point2_x,'cy':point2_y});
         var new_path = 'M '+start_x+','+start_y+' C '+point1_x+','+point1_y+' '+point2_x+','+point2_y+' '+end_x+','+end_y;
         $(that).attr('d',new_path);
+        // 备注点动
+        if(remark_status){
+            addRemark(that);
+        }
         //切线动
         var $line1 = $('.line1[for="'+select_path_id+'"]');
         var $line2 = $('.line2[for="'+select_path_id+'"]');
@@ -166,6 +171,11 @@ DragLine.CreateBoard = function(that){
             $('.line1[for="'+select_path_id+'"]').attr({'x1':start_x,'y1':start_y,'x2':point1_x,'y2':point1_y});
             $('.line2[for="'+select_path_id+'"]').attr({'x1':end_x,'y1':end_y,'x2':point2_x,'y2':point2_y});
         }
+
+        // 备注点动
+        if(remark_status){
+            addRemark(line);
+        }
         return line;
     }
     // 删除线条及相关切线切点方法
@@ -175,6 +185,8 @@ DragLine.CreateBoard = function(that){
         $('.point2[for="'+id+'"]').remove();
         $('.line1[for="'+id+'"]').remove();
         $('.line2[for="'+id+'"]').remove();
+        $('.remark_point[for="'+id+'"]').remove();
+        $('.remark_text[for="'+id+'"]').remove();
     }
     // 删除物体方法
     function delete_obj(id){
@@ -246,7 +258,32 @@ DragLine.CreateBoard = function(that){
         var new_top = get_px_num(obj.css('top'))+get_px_num(obj.css('padding-top'));
         obj.css({'padding':0,'left':new_left,'top':new_top});
     }
-    
+    // 添加备注点
+    function addRemark(that){
+        var id = $(that).attr('id');
+        $('.remark_point[for="'+id+'"]').remove();
+        var path = $(that).attr('d');
+        var remark_point = document.createElementNS('http://www.w3.org/2000/svg', 'circle');   
+        var r = 6;
+        $(remark_point).attr({'class':'remark_point hide_point','cx':'0','cy':'0','r':r,'fill':'#C26B26','for':$(that).attr('id')});
+        var motion = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion');  
+        $(motion).attr({'path':path,'begin':'0s','dur':"0.1s",'end':'0.05s','fill':'freeze'}) ;
+        $(remark_point).append(motion);
+        $('.lines').append(remark_point);
+
+        setTimeout(setPoint,100);
+        function setPoint(){
+            var point = $('.remark_point[for="'+id+'"]');
+            if(point.length){
+                var left = point.position().left-main_left+r;
+                var top = point.position().top-main_top+r;
+                if(left&&top){
+                    $(that).attr({'half_x':left,'half_y':top});
+                    $('.remark_text[for="'+id+'"]').css({'left':left+10,'top':top-10})
+                }
+            }
+        }
+    }
 
     // 绑定选中移动物体事件
     $board.on('mousedown','.movebody',function(e) {
@@ -370,6 +407,10 @@ DragLine.CreateBoard = function(that){
                 $line2.attr({'x2':new_xx,'y2':new_yy});
             }
             $path.attr('d',new_path);
+            // 备注点动
+            if(remark_status){
+                addRemark($path);
+            }
         }
         //线条移动
         if(action_status==2){
@@ -390,11 +431,13 @@ DragLine.CreateBoard = function(that){
             if(!link2){
                 var line_id = line_obj.attr('id');
                 delete_line(line_id);
+                $('.remark_point[for="'+line_id+'"]').remove();
             }
             line_obj = '';
         }
+        $('.remark_point').addClass('hide_point');
     })
-    // 绑定鼠标抬起重新初始化事件
+    // 绑定鼠标点击重新初始化事件
     $board.click(function(e) {  
         $('.rightMenu').hide();
     })
@@ -412,15 +455,16 @@ DragLine.CreateBoard = function(that){
             delete_obj(id);
         }
     })
-    // 绑定切点显示事件
+    // 绑定鼠标进入线条事件
     $board.on('mouseenter','.line',function(e) { 
+        var id = $(this).attr('id');
         if(action_status==2){
-            var id = $(this).attr('id');
             $('.point1[for="'+id+'"]').css('display','block');
             $('.point2[for="'+id+'"]').css('display','block');
             $('.line1[for="'+id+'"]').css('display','block');
             $('.line2[for="'+id+'"]').css('display','block');
         }
+        $('.remark_point[for="'+id+'"]').removeClass('hide_point');
     }); 
     // 取消右键菜单
     $board.bind("contextmenu",function(){
@@ -436,6 +480,33 @@ DragLine.CreateBoard = function(that){
     $board.on('click','#delTag',function(){
         var obj = $('#'+draw_id);
         delTag(obj);
+    })
+    // 添加备注输入框
+    $board.on('click','.remark_point',function(){
+        var id = $(this).attr('for');
+        if(!$('.remark_text[for="'+id+'"]').length){
+            var line = $('#'+id);
+            var x = parseInt(line.attr('half_x'))+10;
+            var y = parseInt(line.attr('half_y'))-10;
+            $board.append('<input type="text" class="remark_text" style="left:'+x+'px;top:'+y+'px;" for="'+id+'"/>');
+        }else{
+            $('.remark_text[for="'+id+'"]').attr('disabled',false);
+        }
+    })
+    // 添加备注
+    $board.on('keydown','.remark_text',function(e){
+        if(e.which==13){
+            var id = $(this).attr('for');
+            var line = $('#'+id);
+            var x = parseInt(line.attr('half_x'))+10;
+            var y = parseInt(line.attr('half_y'))-10;
+            var val = $(this).val();
+            if(val){
+                $(this).attr('disabled',true);
+            }else{
+               $(this).remove(); 
+            }
+        }
     })
     // 添加返回对象方法
     $board.extend({
@@ -466,6 +537,10 @@ DragLine.CreateBoard = function(that){
         // 设置右击菜单是否显示
         setRightMenu:function(m){
             right_menu = m;
+        },
+        // 设置备注功能是否开启
+        setRemarkStatus:function(m){
+            remark_status = m;
         },
         // 状态切换方法:0-无操作,1-移动,2-画线,3-删除
         setStatus:function(s){
@@ -689,6 +764,13 @@ DragLine.CreateMenu = function($board){
 
 // 生成单一指向关系图
 DragLine.LoadingInfo = function($board,data,num=1){
+    // 初始化
+    $board.setStatus(1);
+    $board.setMoveTogether(true);
+    $board.setRightMenu(false);
+    $board.setRemarkStatus(false);
+    $board.css('display','none');
+    $board.fadeIn(1000);
     // 获取变量
     var width = $board.width();                                         //画板宽度
     var height = $board.height();                                       //画板高度
@@ -870,12 +952,6 @@ DragLine.LoadingInfo = function($board,data,num=1){
             }
         }
     }
-    
-    $board.setStatus(1);
-    $board.setMoveTogether(true);
-    $board.setRightMenu(false);
-    $board.css('display','none');
-    $board.fadeIn(1000);
 
     var info = {
         // 筛选类型方法

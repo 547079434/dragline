@@ -14,3 +14,6 @@
 .clicked { border-style: inset; }
 .rightMenu { width: 60px;height: auto;background: #fff;position: absolute;list-style: none;border: 1px solid #ddd;padding:0;margin: 0;font-size: 12px;text-align: center;cursor: pointer;display: none;z-index:3 }
 .rightMenu li:hover{ background: #666;color:#fff; }
+.remark_point {cursor: pointer;}
+.hide_point {opacity: 0;cursor: default;}
+.remark_text {position: absolute;z-index: 5;border: none;background: #FFF5C0;padding: 5px;width: 100px;height: 20px;}
