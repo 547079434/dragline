@@ -5,7 +5,7 @@ var DragLine = function(){
 
 // 创建画布
 DragLine.CreateBoard = function(that){
-    $(that).append('<div id="dragline_board"><svg class="lines" xmlns="http://www.w3.org/2000/svg"></svg><ul class="rightMenu"><li class="addTag" value="top">加上标签</li><li class="addTag" value="bottom">加下标签</li><li class="addTag" value="left">加左标签</li><li class="addTag" value="right">加右标签</li><li id="delTag">删除标签</li></ul></div>');
+    $(that).append('<div id="dragline_board"><svg class="lines" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="remark_bakground" x="0" y="0" width="1" height="1"><rect x="0" y="0" width="12" height="12" fill="#C26B26"></rect><rect x="2" y="5" width="8" height="2" fill="#fff"></rect></pattern></defs></svg><ul class="rightMenu"><li id="addTag">添加标签</li><li id="delTag">删除标签</li></ul></div>');
     
     // 初始化
     var $board = $('#dragline_board');                 //画布
@@ -25,6 +25,10 @@ DragLine.CreateBoard = function(that){
     var main_top = get_top($board);                    //画布上边距
     var link_move = false;                             //是否跟随主链接物体移动
     var right_menu = false;                            //右击菜单是否显示(标签)
+    var tag_position = 'right';                        //标签位置
+    var tag_color = '#F67D23';                         //标签颜色
+    var tag_font_color = '#fff';                       //标签颜色
+    var tag_text = '标签名';                           //标签名
     var remark_status = true;                          //是否开启备注功能
     
     // 获取左边距方法
@@ -211,7 +215,7 @@ DragLine.CreateBoard = function(that){
         $(that).attr({'fix-x':'','fix-y':''});
     }
     // 添加标签
-    function addTag(obj,tag_name='标签',position='right'){
+    function addTag(obj){
         var alreay = obj.children('.tag').length;
         if(!alreay){
             var tag = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -220,24 +224,24 @@ DragLine.CreateBoard = function(that){
             var tag_height = 18;
             var obj_width = obj.width();
             var obj_height = obj.height();
-            if(position=='right'){
+            if(tag_position=='right'){
                 var x = obj_width;
                 var y = obj_height/2;
-            }else if(position=='left'){
+            }else if(tag_position=='left'){
                 var x = 0;
                 var y = obj_height/2;
-            }else if(position=='top'){
+            }else if(tag_position=='top'){
                 var x = obj_width/2;
                 var y = 0;
-            }else if(position=='bottom'){
+            }else if(tag_position=='bottom'){
                 var x = obj_width/2;
                 var y = obj_height;
             }else{
                 var x = obj_width;
                 var y = obj_height/2;
             }
-            $(tag).attr({'class':'tag','width':tag_width,'height':tag_height,'x':x-tag_width/2,'y':y-tag_height/2,'rx':'8','ry':'8','fill':'#F67D23','stroke':'none'});
-            $(text).attr({'class':'tag_text','x':x,'y':y+1,'stroke':'none','fill':'#fff','style':'font-size:12px;','text-anchor':"middle",'dominant-baseline': 'middle'}).text(tag_name);
+            $(tag).attr({'class':'tag','width':tag_width,'height':tag_height,'x':x-tag_width/2,'y':y-tag_height/2,'rx':'8','ry':'8','fill':tag_color,'stroke':'none'});
+            $(text).attr({'class':'tag_text','x':x,'y':y+1,'stroke':'none','fill':tag_font_color,'style':'font-size:12px;','text-anchor':"middle",'dominant-baseline': 'middle'}).text(tag_text);
             var new_left = get_px_num(obj.css('left'))-tag_width/2;
             var new_top = get_px_num(obj.css('top'))-tag_width/2;
             obj.css({'padding':tag_width/2,'left':new_left,'top':new_top});
@@ -265,7 +269,7 @@ DragLine.CreateBoard = function(that){
         var path = $(that).attr('d');
         var remark_point = document.createElementNS('http://www.w3.org/2000/svg', 'circle');   
         var r = 6;
-        $(remark_point).attr({'class':'remark_point hide_point','cx':'0','cy':'0','r':r,'fill':'#C26B26','for':$(that).attr('id')});
+        $(remark_point).attr({'class':'remark_point hide_point','cx':'0','cy':'0','r':r,'fill':'url(#remark_bakground)','for':$(that).attr('id')});
         var motion = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion');  
         $(motion).attr({'path':path,'begin':'0s','dur':"0.1s",'end':'0.05s','fill':'freeze'}) ;
         $(remark_point).append(motion);
@@ -471,10 +475,9 @@ DragLine.CreateBoard = function(that){
         return false;
     });
     // 添加标签
-    $board.on('click','.addTag',function(){
+    $board.on('click','#addTag',function(){
         var obj = $('#'+draw_id);
-        var position = $(this).attr('value');
-        addTag(obj,'标签',position);
+        addTag(obj);
     })
     // 删除标签
     $board.on('click','#delTag',function(){
@@ -568,6 +571,22 @@ DragLine.CreateBoard = function(that){
         setLineColor:function(color){
             stroke_color = color;
         },
+        // 设置标签位置
+        setTagPosition:function(position){
+            tag_position = position;
+        },
+        // 设置标签名
+        setTagText:function(text){
+            tag_text = text;
+        },
+        // 设置标签颜色
+        setTagColor:function(color){
+            tag_color = color;
+        },
+        // 设置标签字体颜色
+        setTagFontColor:function(font_color){
+            tag_font_color = font_color;
+        },
         // 添加物体方法
         createMoveObj:function(svg,cx='',cy='',id=''){
             var obj_id = 'obj_'+draw_obj_id;
@@ -642,8 +661,9 @@ DragLine.CreateBoard = function(that){
 DragLine.CreateMenu = function($board){
     var status_li = '<li id="dragMove" class="li_status" title="移动">移动</li><li id="dragDraw" class="li_status" title="连线">连线</li><li id="dragDelete" class="li_status" title="删除">删除</li><div class="menuline"></div>';
     var icon_li = '<li id="addCircle" class="li_icon">○</li><li id="addRect" class="li_icon">□</li><li id="addTriangle" class="li_icon">△</li><div class="menuline"></div>';
-    var style_select = '<select id="strokeStyle"><option value="0">—</option><option value="1">- -</option></select><select id="strokeColor"><option value="black" style="color:black">——</option><option value="red" style="color:red">——</option><option value="green" style="color:green">——</option><option value="yellow" style="color:yellow">——</option></select><select id="fillColor"><option value="none">无</option><option value="black" style="color:black">■</option><option value="red" style="color:red">■</option><option value="green" style="color:green">■</option><option value="yellow" style="color:yellow">■</option></select>';
-    $board.append('<div class="dragline_menu"><ul>'+status_li+icon_li+style_select+'</ul></div>');
+    var style_select = '<select id="strokeStyle"><option value="0">—</option><option value="1">- -</option></select><select id="strokeColor"><option value="black" style="color:black">——</option><option value="red" style="color:red">——</option><option value="green" style="color:green">——</option><option value="yellow" style="color:yellow">——</option></select><select id="fillColor"><option value="none">无</option><option value="black" style="color:black">■</option><option value="red" style="color:red">■</option><option value="green" style="color:green">■</option><option value="yellow" style="color:yellow">■</option></select><div class="menuline"></div>';
+    var tag_li = '<span>标签：</span><select id="tagPosition"><option value="right">右标签</option><option value="left">左标签</option><option value="top">上标签</option><option value="bottom">下标签</option></select><select id="tagColor"><option value="#F67D23" style="color:#F67D23">■</option><option value="#417505" style="color:#417505">■</option><option value="#4990E2" style="color:#4990E2">■</option><option value="#BD0FE1" style="color:#BD0FE1">■</option></select><input type="text" id="tagText" value="标签名"/><select id="tagFontColor" style="color:#fff"><option value="#fff" style="color:#fff">A</option><option value="#000" style="color:#000">A</option><option value="red" style="color:red">A</option><option value="blue" style="color:blue">A</option></select>'
+    $board.append('<div class="dragline_menu"><ul>'+status_li+icon_li+style_select+tag_li+'</ul></div>');
     $board.setRightMenu(true);
 
     // 初始化
@@ -732,6 +752,28 @@ DragLine.CreateMenu = function($board){
         var val = $(this).val();
         $(this).css('color',val);
         fill_color = val;
+    })
+    // 标签颜色切换
+    $board.on('change','#tagColor',function(e) {
+        var val = $(this).val();
+        $(this).css('color',val);
+        $board.setTagColor(val);
+    })
+    // 标签位置切换
+    $board.on('change','#tagPosition',function(e) {
+        var val = $(this).val();
+        $board.setTagPosition(val);
+    })
+    // 标签名修改
+    $board.on('keyup','#tagText',function(e) {
+        var val = $(this).val();
+        $board.setTagText(val);
+    })
+    // 标签文字颜色切换
+    $board.on('change','#tagFontColor',function(e) {
+        var val = $(this).val();
+        $(this).css('color',val);
+        $board.setTagFontColor(val);
     })
     // 移动事件
     $board.mousemove(function(e) {
