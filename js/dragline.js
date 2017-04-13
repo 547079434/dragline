@@ -30,11 +30,16 @@ DragLine.CreateBoard = function(that){
     var tag_font_color = '#fff';                       //标签颜色
     var tag_text = '标签名';                           //标签名
     var remark_status = true;                          //是否开启备注功能
+    var zoom = false                                   //是否开启缩放/移动画板功能
     
+    // 获取px数值
+    function get_px_num(px){
+        return parseInt(px.split('px')[0]);
+    }
     // 获取左边距方法
     function get_left(that){
         var position_left = $(that).offset().left;
-        var border_left = parseInt($(that).css('borderLeftWidth').split('px')[0]);
+        var border_left = get_px_num($(that).css('borderLeftWidth'));
         return position_left+border_left; 
     }
     // 获取上边距方法
@@ -43,10 +48,6 @@ DragLine.CreateBoard = function(that){
         var border_top = parseInt($(that).css('borderTopWidth').split('px')[0]);
         return position_top+border_top; 
     }
-    // 获取px数值
-    function get_px_num(px){
-        return parseInt(px.split('px')[0]);
-    }
     // 获取物体定位点坐标方法(无定位点，则选取中心点)
     function get_center(that){
         var x,y;
@@ -54,8 +55,8 @@ DragLine.CreateBoard = function(that){
         var top = $(that).position().top;
         var width = $(that).width();
         var height = $(that).height();
-        var padding_left = parseInt($(that).css('padding-left').split('px')[0]);
-        var padding_top = parseInt($(that).css('padding-top').split('px')[0]);
+        var padding_left = get_px_num($(that).css('padding-left'));
+        var padding_top = get_px_num($(that).css('padding-top'));
         if($(that).hasClass('fix_point')){
             x = left+parseInt($(that).attr('fix-x'))-main_left+padding_left;
             y = top+parseInt($(that).attr('fix-y'))-main_top+padding_top;
@@ -415,6 +416,21 @@ DragLine.CreateBoard = function(that){
             if(remark_status){
                 addRemark($path);
             }
+        }else if(select_obj.type == 'board' && zoom){   //画板移动
+            var old_x,old_y;
+            if($board.css('margin-left')){
+                old_x = get_px_num($board.css('margin-left'));
+            }else{
+                old_x = 0;
+            }
+            if($board.css('margin-top')){
+                old_y = get_px_num($board.css('margin-top'));
+            }else{
+                old_y = 0;
+            }
+            var new_xx = now_xx-xx+old_x;
+            var new_yy = now_yy-yy+old_y;
+            $board.css({'margin-left':new_xx,'margin-top':new_yy});
         }
         //线条移动
         if(action_status==2){
@@ -424,6 +440,13 @@ DragLine.CreateBoard = function(that){
         }
         xx = now_xx;
         yy = now_yy;
+    })
+    // 绑定鼠标按住画板事件
+    $board.mousedown(function(e) {  
+        if(!select_obj.obj&&zoom){
+            select_obj.obj = this;
+            select_obj.type = 'board';
+        }
     })
     // 绑定鼠标抬起重新初始化事件
     $board.mouseup(function(e) {  
@@ -474,6 +497,23 @@ DragLine.CreateBoard = function(that){
     $board.bind("contextmenu",function(){
         return false;
     });
+    // 鼠标滚轮缩放(chrome)
+    var wheelnum = 1;
+    $board.bind("mousewheel",function(e){
+        if(zoom){
+            if(!$('#boardOutside').length){
+                $board.wrapAll('<div id="boardOutside" style="margin:0 auto;width:'+($board.width()+2*get_px_num($board.css('borderLeftWidth')))+'px;height:'+($board.height()+2*get_px_num($board.css('borderLeftWidth')))+'px;position: relative;overflow: hidden"></div>');
+            }
+            var detail = event.wheelDelta;
+            if(detail>0){
+                wheelnum += 0.1;
+                $board.css({'-moz-transform':'scale('+wheelnum+','+wheelnum+')','-webkit-transform':'scale('+wheelnum+','+wheelnum+')','-o-transform':'scale('+wheelnum+','+wheelnum+')'})
+            }else{
+                wheelnum -= 0.1;
+                $board.css({'-moz-transform':'scale('+wheelnum+','+wheelnum+')','-webkit-transform':'scale('+wheelnum+','+wheelnum+')','-o-transform':'scale('+wheelnum+','+wheelnum+')'})
+            }
+        }
+    })
     // 添加标签
     $board.on('click','#addTag',function(){
         var obj = $('#'+draw_id);
@@ -491,7 +531,7 @@ DragLine.CreateBoard = function(that){
             var line = $('#'+id);
             var x = parseInt(line.attr('half_x'))+10;
             var y = parseInt(line.attr('half_y'))-10;
-            $board.append('<input type="text" class="remark_text" style="left:'+x+'px;top:'+y+'px;" for="'+id+'"/>');
+            $board.append('<textarea class="remark_text" style="left:'+x+'px;top:'+y+'px;" for="'+id+'"></textarea>');
         }else{
             $('.remark_text[for="'+id+'"]').attr('disabled',false);
         }
@@ -586,6 +626,10 @@ DragLine.CreateBoard = function(that){
         // 设置标签字体颜色
         setTagFontColor:function(font_color){
             tag_font_color = font_color;
+        },
+        // 设置缩放/拖拽画板功能是否开启
+        setZoom:function(z){
+            zoom = z;
         },
         // 添加物体方法
         createMoveObj:function(svg,cx='',cy='',id=''){
@@ -1037,4 +1081,35 @@ DragLine.LoadingInfo = function($board,data,num=1){
         }
     }
     return info;
+}
+
+// 生成随机分布图
+DragLine.RandomInfo = function($board,data){
+    // 初始化
+    $board.setStatus(1);
+    $board.setRightMenu(false);
+    $board.setRemarkStatus(false);
+    $board.setZoom(true);
+    $board.css('display','none');
+    $board.fadeIn(1000);
+    // 获取变量
+    var width = $board.width();                                         //画板宽度
+    var height = $board.height();                                       //画板高度
+    var color_list = ['#4990E2','#BD0FE1','#F67D23','#417505']          //散点颜色数组
+    // 画主图
+    var main_r = 16
+    var circle = '<circle cx="'+main_r+'" cy="'+main_r+'" r="'+main_r+'" style="fill:#4990E2;" stroke="none"></circle><text x="50%" y="50%" dy=".3em" fill="#fff" text-anchor="middle" style="font-size:12px;">'+data.father.name+'</text>';
+    var obj = $board.createMoveObj(circle,width/2-main_r,height/2-main_r,data.father.id);
+    obj.setSize(main_r*2,main_r*2);
+
+    for(i in data.children){
+        var children = data.children[i];
+        var random_x = Math.random()*width;
+        var random_y = Math.random()*height;
+
+        var r = 0.1*children.close;
+        var inside = '<circle cx="'+r+'" cy="'+r+'" r="'+r+'" style="fill:'+color_list[children.style-1]+'"></circle>';
+        var obj = $board.createMoveObj(inside,random_x,random_y,children.id);
+        obj.setSize(r*2,r*2);
+    }
 }
