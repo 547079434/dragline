@@ -502,7 +502,7 @@ DragLine.CreateBoard = function(that){
     $board.bind("mousewheel",function(e){
         if(zoom){
             if(!$('#boardOutside').length){
-                $board.wrapAll('<div id="boardOutside" style="margin:0 auto;width:'+($board.width()+2*get_px_num($board.css('borderLeftWidth')))+'px;height:'+($board.height()+2*get_px_num($board.css('borderLeftWidth')))+'px;position: relative;overflow: hidden"></div>');
+                $board.wrap('<div id="boardOutside" style="margin:0 auto;width:'+($board.width()+2*get_px_num($board.css('borderLeftWidth')))+'px;height:'+($board.height()+2*get_px_num($board.css('borderTopWidth')))+'px;position: relative;overflow: hidden"></div>');
             }
             var detail = event.wheelDelta;
             if(detail>0){
@@ -851,7 +851,6 @@ DragLine.CreateMenu = function($board){
 // 生成单一指向关系图
 DragLine.LoadingInfo = function($board,data,num=1){
     // 初始化
-    $board.setStatus(1);
     $board.setMoveTogether(true);
     $board.setRightMenu(false);
     $board.setRemarkStatus(false);
@@ -1080,13 +1079,13 @@ DragLine.LoadingInfo = function($board,data,num=1){
             })
         }
     }
+    $board.setStatus(1);
     return info;
 }
 
 // 生成随机分布图
 DragLine.RandomInfo = function($board,data){
     // 初始化
-    $board.setStatus(1);
     $board.setRightMenu(false);
     $board.setRemarkStatus(false);
     $board.setZoom(true);
@@ -1101,7 +1100,7 @@ DragLine.RandomInfo = function($board,data){
     var circle = '<circle cx="'+main_r+'" cy="'+main_r+'" r="'+main_r+'" style="fill:#4990E2;" stroke="none"></circle><text x="50%" y="50%" dy=".3em" fill="#fff" text-anchor="middle" style="font-size:12px;">'+data.father.name+'</text>';
     var obj = $board.createMoveObj(circle,width/2-main_r,height/2-main_r,data.father.id);
     obj.setSize(main_r*2,main_r*2);
-
+    // 画散点图
     for(i in data.children){
         var children = data.children[i];
         var random_x = Math.random()*width;
@@ -1112,4 +1111,6 @@ DragLine.RandomInfo = function($board,data){
         var obj = $board.createMoveObj(inside,random_x,random_y,children.id);
         obj.setSize(r*2,r*2);
     }
+
+    $board.setStatus(1);
 }
