@@ -1094,7 +1094,12 @@ DragLine.LoadingInfo = function($board,data,num=1){
         $(path).attr({'stroke-dasharray':length,'stroke-dashoffset':length});
         $(path).animate({'stroke-dashoffset':length},500).animate({'stroke-dashoffset':length*2},1200).animate({'stroke-dasharray':'','stroke-dashoffset':''},0);
     })
-
+    // 圆展开动画
+    $('.movebody circle').each(function(){
+        var r = $(this).attr('r');
+        $(this).attr('r','0');
+        $(this).animate({'r':r},500);
+    })
     $board.setStatus(1);
     return info;
 }
@@ -1105,8 +1110,8 @@ DragLine.RandomInfo = function($board,data){
     $board.setRightMenu(false);
     $board.setRemarkStatus(false);
     $board.setZoom(true);
-    $board.css('display','none');
-    $board.fadeIn(1000);
+    $board.hide();
+    $board.fadeIn(800);
     // 获取变量
     var width = $board.width();                                         //画板宽度
     var height = $board.height();                                       //画板高度
@@ -1141,6 +1146,11 @@ DragLine.RandomInfo = function($board,data){
         var obj = $board.createMoveObj(inside,random_x,random_y,children.id);
         obj.setSize((r+1)*2,(r+1)*2);
     }
-
+    // 圆展开动画
+    $('.movebody circle').each(function(){
+        var r = $(this).attr('r');
+        $(this).attr('r','0');
+        $(this).animate({'r':r},1000);
+    })
     $board.setStatus(1);
 }
