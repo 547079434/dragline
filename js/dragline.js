@@ -377,8 +377,8 @@ DragLine.CreateBoard = function(that){
         var now_yy = e.pageY;
         if(select_obj.type == 'object'){        //物体移动
             var $object = $(select_obj.obj);
-            var move_x =parseInt($object.css('left').split('px')[0]) + now_xx - xx;
-            var move_y =parseInt($object.css('top').split('px')[0]) + now_yy - yy;
+            var move_x =get_px_num($object.css('left')) + now_xx - xx;
+            var move_y =get_px_num($object.css('top')) + now_yy - yy;
             $object.css('left',move_x).css('top',move_y);
             //线条移动
             var array = get_center(select_obj.obj);
@@ -1111,21 +1111,35 @@ DragLine.RandomInfo = function($board,data){
     var width = $board.width();                                         //画板宽度
     var height = $board.height();                                       //画板高度
     var color_list = ['#4990E2','#BD0FE1','#F67D23','#417505']          //散点颜色数组
+    var total = data.children.length;                                   //子节点总个数
     // 画主图
-    var main_r = 16
-    var circle = '<circle cx="'+main_r+'" cy="'+main_r+'" r="'+main_r+'" style="fill:#4990E2;" stroke="none"></circle><text x="50%" y="50%" dy=".3em" fill="#fff" text-anchor="middle" style="font-size:12px;">'+data.father.name+'</text>';
-    var obj = $board.createMoveObj(circle,width/2-main_r,height/2-main_r,data.father.id);
-    obj.setSize(main_r*2,main_r*2);
+    var n,main_r,main_font;
+    if(total<=50){
+        n = 0.25;
+        main_r = 30;
+        main_font = 16;
+    }else if(total<=100){
+        n = 0.2;
+        main_r = 20;
+        main_font = 14;
+    }else{
+        n = 0.12;
+        main_r = 16;
+        main_font = 12;
+    }
+    var circle = '<circle cx="'+(main_r+1)+'" cy="'+(main_r+1)+'" r="'+main_r+'" style="fill:#ff3333;" stroke="#111" stroke-width="1"></circle><text x="50%" y="50%" dy=".3em" fill="#fff" text-anchor="middle" style="font-size:'+main_font+'px;">'+data.father.name+'</text>';
+    var obj = $board.createMoveObj(circle,width/2-main_r-1,height/2-main_r-1,data.father.id);
+    obj.setSize((main_r+1)*2,(main_r+1)*2);
     // 画散点图
     for(i in data.children){
         var children = data.children[i];
-        var random_x = Math.random()*width;
-        var random_y = Math.random()*height;
+        var random_x = 0.95*Math.random()*width;
+        var random_y = 0.95*Math.random()*height;
 
-        var r = 0.1*children.close;
-        var inside = '<circle cx="'+r+'" cy="'+r+'" r="'+r+'" style="fill:'+color_list[children.style-1]+'"></circle>';
+        var r = n*children.close;
+        var inside = '<circle cx="'+(r+1)+'" cy="'+(r+1)+'" r="'+r+'" style="fill:'+color_list[children.style-1]+'" stroke="#111" stroke-width="1"></circle>';
         var obj = $board.createMoveObj(inside,random_x,random_y,children.id);
-        obj.setSize(r*2,r*2);
+        obj.setSize((r+1)*2,(r+1)*2);
     }
 
     $board.setStatus(1);
