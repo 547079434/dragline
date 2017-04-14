@@ -289,6 +289,14 @@ DragLine.CreateBoard = function(that){
             }
         }
     }
+    // 抖动动画效果
+    function shaking(obj,x,y){
+        var rnum = Math.random();
+        var move1 = rnum*10;
+        var move2 = rnum*5;
+        var move3 = rnum*3;
+        obj.animate({'left':x+move1,'top':y+move1},70).animate({'left':x-move1,'top':y-move1},70).animate({'left':x+move2,'top':y+move2},80).animate({'left':x-move2,'top':y-move2},80).animate({'left':x+move3,'top':y+move3},90).animate({'left':x-move3,'top':y-move3},90).animate({'left':x,'top':y},100);
+    }
 
     // 绑定选中移动物体事件
     $board.on('mousedown','.movebody',function(e) {
@@ -337,6 +345,7 @@ DragLine.CreateBoard = function(that){
                         var lx = l_array[0];
                         var ly = l_array[1];
                         move_line(this,lx,ly,1);
+                        shaking($link1,mx,my);
                     })
                 }
             }else if(action_status==2){
@@ -854,7 +863,7 @@ DragLine.LoadingInfo = function($board,data,num=1){
     $board.setMoveTogether(true);
     $board.setRightMenu(false);
     $board.setRemarkStatus(false);
-    $board.css('display','none');
+    $board.hide();
     $board.fadeIn(1000);
     // 获取变量
     var width = $board.width();                                         //画板宽度
@@ -1079,6 +1088,13 @@ DragLine.LoadingInfo = function($board,data,num=1){
             })
         }
     }
+    // 发散连线动画
+    document.querySelectorAll('path').forEach(function(path) {
+        var length = path.getTotalLength(); 
+        $(path).attr({'stroke-dasharray':length,'stroke-dashoffset':length});
+        $(path).animate({'stroke-dashoffset':length},500).animate({'stroke-dashoffset':length*2},1200).animate({'stroke-dasharray':'','stroke-dashoffset':''},0);
+    })
+
     $board.setStatus(1);
     return info;
 }
