@@ -10,7 +10,7 @@
 .li_icon {line-height: 15px;font-size: 26px;border: 2px outset;width: 20px;height: 20px;margin:10px auto;}
 .li_status {line-height: 20px;font-size: 12px;border: 2px outset;width: 36px;height: 20px;margin:10px auto;}
 .dragline_menu select{ width: 36px;margin: 8px 7px;font-weight:bold; }
-.dragline_menu input{ width: 36px;margin: 8px 7px;font-size:12px; }
+.dragline_menu input{ width: 36px;margin: 6px 7px;font-size:12px; }
 .dragline_menu span{ font-size:14px; }
 .menuline{ width: 100%;height: 0;border-top:1px solid #000; }
 .clicked { border-style: inset; }

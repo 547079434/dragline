@@ -27,7 +27,7 @@ DragLine.CreateBoard = function(that){
     var right_menu = false;                            //右击菜单是否显示(标签)
     var tag_position = 'right';                        //标签位置
     var tag_color = '#F67D23';                         //标签颜色
-    var tag_font_color = '#fff';                       //标签颜色
+    var tag_font_color = '#fff';                       //标签字体颜色
     var tag_text = '标签名';                           //标签名
     var remark_status = true;                          //是否开启备注功能
     var zoom = false                                   //是否开启缩放/移动画板功能
@@ -714,8 +714,8 @@ DragLine.CreateBoard = function(that){
 DragLine.CreateMenu = function($board){
     var status_li = '<li id="dragMove" class="li_status" title="移动">移动</li><li id="dragDraw" class="li_status" title="连线">连线</li><li id="dragDelete" class="li_status" title="删除">删除</li><div class="menuline"></div>';
     var icon_li = '<li id="addCircle" class="li_icon">○</li><li id="addRect" class="li_icon">□</li><li id="addTriangle" class="li_icon">△</li><div class="menuline"></div>';
-    var style_select = '<select id="strokeStyle"><option value="0">—</option><option value="1">- -</option></select><select id="strokeColor"><option value="black" style="color:black">——</option><option value="red" style="color:red">——</option><option value="green" style="color:green">——</option><option value="yellow" style="color:yellow">——</option></select><select id="fillColor"><option value="none">无</option><option value="black" style="color:black">■</option><option value="red" style="color:red">■</option><option value="green" style="color:green">■</option><option value="yellow" style="color:yellow">■</option></select><div class="menuline"></div>';
-    var tag_li = '<span>标签：</span><select id="tagPosition"><option value="right">右标签</option><option value="left">左标签</option><option value="top">上标签</option><option value="bottom">下标签</option></select><select id="tagColor"><option value="#F67D23" style="color:#F67D23">■</option><option value="#417505" style="color:#417505">■</option><option value="#4990E2" style="color:#4990E2">■</option><option value="#BD0FE1" style="color:#BD0FE1">■</option></select><input type="text" id="tagText" value="标签名"/><select id="tagFontColor" style="color:#fff"><option value="#fff" style="color:#fff">A</option><option value="#000" style="color:#000">A</option><option value="red" style="color:red">A</option><option value="blue" style="color:blue">A</option></select>'
+    var style_select = '<select id="strokeStyle" title="线条样式"><option value="0">—</option><option value="1">- -</option></select><select id="strokeColor" title="线条颜色"><option value="black" style="color:black">——</option><option value="red" style="color:red">——</option><option value="green" style="color:green">——</option><option value="yellow" style="color:yellow">——</option></select><input type="color" id="fillColor" style="width:30px;height:20px;" value="#ffffff" title="物体填充颜色"/><div class="menuline"></div>';
+    var tag_li = '<span>标签：</span><select id="tagPosition"><option value="right">右标签</option><option value="left">左标签</option><option value="top">上标签</option><option value="bottom">下标签</option></select><input type="color" id="tagColor" style="width:30px;height:20px;" value="#F67D23" title="标签填充颜色"/><input type="text" id="tagText" value="标签名"/><select id="tagFontColor" style="color:#fff" title="标签字体颜色"><option value="#fff" style="color:#fff">A</option><option value="#000" style="color:#000">A</option><option value="red" style="color:red">A</option><option value="blue" style="color:blue">A</option></select>';
     $board.append('<div class="dragline_menu"><ul>'+status_li+icon_li+style_select+tag_li+'</ul></div>');
     $board.setRightMenu(true);
 
@@ -803,13 +803,11 @@ DragLine.CreateMenu = function($board){
     // 填充颜色切换
     $board.on('change','#fillColor',function(e) {
         var val = $(this).val();
-        $(this).css('color',val);
         fill_color = val;
     })
     // 标签颜色切换
     $board.on('change','#tagColor',function(e) {
         var val = $(this).val();
-        $(this).css('color',val);
         $board.setTagColor(val);
     })
     // 标签位置切换
