@@ -1096,9 +1096,9 @@ DragLine.LoadingInfo = function($board,data,num=1){
     })
     // 圆展开动画
     $('.movebody circle').each(function(){
-        var r = $(this).attr('r');
-        $(this).attr('r','0');
-        $(this).animate({'r':r},500);
+        var r = parseInt($(this).css('r').split('px')[0]);
+        $(this).css('r','0');
+        $(this).animate({'r':r},500*Math.random());
     })
     $board.setStatus(1);
     return info;
@@ -1148,9 +1148,9 @@ DragLine.RandomInfo = function($board,data){
     }
     // 圆展开动画
     $('.movebody circle').each(function(){
-        var r = $(this).attr('r');
-        $(this).attr('r','0');
-        $(this).animate({'r':r},1000);
+        var r = parseInt($(this).css('r').split('px')[0]);
+        $(this).css('r','0');
+        $(this).animate({'r':r},1000*Math.random());
     })
     $board.setStatus(1);
 }
