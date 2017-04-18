@@ -5,7 +5,7 @@ var DragLine = function(){
 
 // 创建画布
 DragLine.CreateBoard = function(that){
-    $(that).append('<div id="dragline_board"><svg class="lines" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="remark_bakground" x="0" y="0" width="1" height="1"><rect x="0" y="0" width="12" height="12" fill="#C26B26"></rect><rect x="2" y="5" width="8" height="2" fill="#fff"></rect></pattern></defs></svg><ul class="rightMenu"><li id="addTag">添加标签</li><li id="delTag">删除标签</li></ul></div>');
+    $(that).append('<div id="dragline_board"><div id="inside_board"><svg class="lines" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="remark_bakground" x="0" y="0" width="1" height="1"><rect x="0" y="0" width="12" height="12" fill="#C26B26"></rect><rect x="2" y="5" width="8" height="2" fill="#fff"></rect></pattern></defs></svg><ul class="rightMenu"><li id="addTag">添加标签</li><li id="delTag">删除标签</li></ul></div></div>');
     
     // 初始化
     var $board = $('#dragline_board');                 //画布
@@ -30,11 +30,12 @@ DragLine.CreateBoard = function(that){
     var tag_font_color = '#fff';                       //标签字体颜色
     var tag_text = '标签名';                           //标签名
     var remark_status = true;                          //是否开启备注功能
-    var zoom = false                                   //是否开启缩放/移动画板功能
+    var zoom = true;                                   //是否开启缩放/移动画板功能
+    var wheelnum = 1;                                  //缩放倍数
     
     // 获取px数值
     function get_px_num(px){
-        return parseInt(px.split('px')[0]);
+        return parseFloat(px.split('px')[0]);
     }
     // 获取左边距方法
     function get_left(that){
@@ -48,13 +49,28 @@ DragLine.CreateBoard = function(that){
         var border_top = parseInt($(that).css('borderTopWidth').split('px')[0]);
         return position_top+border_top; 
     }
-    // 获取物体定位点坐标方法(无定位点，则选取中心点)
+    // 获取内画板移动值
+    function get_inside_margin(){
+        var left,top;
+        if($('#inside_board').css('margin-left')){
+            left = get_px_num($('#inside_board').css('margin-left'));
+        }else{
+            left = 0;
+        }
+        if($('#inside_board').css('margin-top')){
+            top = get_px_num($('#inside_board').css('margin-top'));
+        }else{
+            top = 0;
+        }
+        return [left,top]; 
+    }
+    // 获取物体相对定位点坐标方法(无定位点，则选取中心点)
     function get_center(that){
         var x,y;
-        var left = $(that).position().left;
-        var top = $(that).position().top;
-        var width = $(that).width();
-        var height = $(that).height();
+        var left = $(that).offset().left;
+        var top = $(that).offset().top;
+        var width = $(that).width()*wheelnum;
+        var height = $(that).height()*wheelnum;
         var padding_left = get_px_num($(that).css('padding-left'));
         var padding_top = get_px_num($(that).css('padding-top'));
         if($(that).hasClass('fix_point')){
@@ -63,6 +79,30 @@ DragLine.CreateBoard = function(that){
         }else{
             x = left+width/2-main_left+padding_left;
             y = top+height/2-main_top+padding_top;
+        }
+        // 画板拖动后处理
+        var array = get_inside_margin();
+        var inside_left = array[0];
+        var inside_top = array[1];
+        x -= inside_left;
+        y -= inside_top;
+        return [x,y]
+    }
+    // 获取物体绝对定位点
+    function get_absolute_center(that){
+        var x,y;
+        var left = get_px_num($(that).css('left'));
+        var top = get_px_num($(that).css('top'));
+        var width = $(that).width();
+        var height = $(that).height();
+        var padding_left = get_px_num($(that).css('padding-left'));
+        var padding_top = get_px_num($(that).css('padding-top'));
+        if($(that).hasClass('fix_point')){
+            x = left+parseInt($(that).attr('fix-x'))+padding_left;
+            y = top+parseInt($(that).attr('fix-y'))+padding_top;
+        }else{
+            x = left+width/2+padding_left;
+            y = top+height/2+padding_top;
         }
         return [x,y]
     }
@@ -86,7 +126,7 @@ DragLine.CreateBoard = function(that){
         $(point2).attr({'class':'point2','cx':'','cy':'','r':'4','fill':'red','for':'path_'+draw_path_id});
         var p_line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');   
         $(p_line2).attr({'class':'line2','x1':'','y1':'','x2':'','y2':'','stroke':'red','stroke-width':'1','for':'path_'+draw_path_id});
-        $(that).children('.lines').append(path,point1,point2,p_line1,p_line2);
+        $(that).children('#inside_board').children('.lines').append(path,point1,point2,p_line1,p_line2);
         var $line = $('#path_'+draw_path_id);
         draw_path_id += 1;
         return $line
@@ -100,7 +140,7 @@ DragLine.CreateBoard = function(that){
         if(type==1){
             // 获取结束点坐标
             var $link2 = $('#'+$(that).attr('link2'));
-            var link_array = get_center($link2);
+            var link_array = get_absolute_center($link2);
             start_x = center_x;
             start_y = center_y;
             end_x = link_array[0];
@@ -108,12 +148,13 @@ DragLine.CreateBoard = function(that){
         }else if(type==2){
             // 获取起始点坐标
             var $link1 = $('#'+$(that).attr('link1'));
-            var link_array = get_center($link1);
+            var link_array = get_absolute_center($link1);
             var start_x = link_array[0];
             var start_y = link_array[1];
             end_x = center_x;
             end_y = center_y;
         }
+        // console.log(start_x,start_y)
         // 获取point1与point2坐标，切点未移动过则保持默认值移动，移动过则不再动
         var result = get_points_xy(start_x,start_y,end_x,end_y);
         var point1_x = result.point1_x;
@@ -144,14 +185,14 @@ DragLine.CreateBoard = function(that){
     }
     // 画线方法 type 1-物体连线(end_id) 2-移动画线([end_x,end_y])
     function draw_line(start_id,line,type,end_data){
-        var start = get_center($('#'+start_id));
+        var start = get_absolute_center($('#'+start_id));
         var start_x = start[0];
         var start_y = start[1];
         var end_id = '';
         var end_x,end_y;
         if(type==1){
             end_id = end_data;
-            var end = get_center($('#'+end_id));
+            var end = get_absolute_center($('#'+end_id));
             end_x = end[0];
             end_y = end[1];
         }else if(type==2){
@@ -163,6 +204,7 @@ DragLine.CreateBoard = function(that){
         var point1_y = result.point1_y;
         var point2_x = result.point2_x;
         var point2_y = result.point2_y;
+
         var path = 'M '+start_x+','+start_y+' C '+point1_x+','+point1_y+' '+point2_x+','+point2_y+' '+end_x+','+end_y;
         line.attr({'d':path,'link1':start_id,'link2':end_id,'stroke':stroke_color});
         if(stroke_style==1){
@@ -302,7 +344,7 @@ DragLine.CreateBoard = function(that){
     $board.on('mousedown','.movebody',function(e) {
         xx = e.pageX;
         yy = e.pageY; 
-        var array = get_center(this);
+        var array = get_absolute_center(this);
         draw_start_x = array[0];
         draw_start_y = array[1];
         if(e.which==1){
@@ -310,6 +352,8 @@ DragLine.CreateBoard = function(that){
                 select_obj.obj = this;
                 select_obj.type = 'object';
             }else if(action_status==2){
+                select_obj.obj = this;
+                select_obj.type = 'drawline';
                 if($(this).hasClass('selected')){
                     $(this).removeClass('selected');
                 }else{
@@ -333,7 +377,7 @@ DragLine.CreateBoard = function(that){
                 //link1跟随link2移动
                 if(link_move&&select_obj.obj){
                     var obj_id = $(select_obj.obj).attr('id');
-                    var array = get_center(select_obj.obj);
+                    var array = get_absolute_center(select_obj.obj);
                     var draw_end_x = array[0];
                     var draw_end_y = array[1];
                     $('path[link2="'+obj_id+'"]').each(function(){
@@ -341,7 +385,7 @@ DragLine.CreateBoard = function(that){
                         var mx =parseInt($link1.css('left').split('px')[0]) + draw_end_x - draw_start_x;
                         var my =parseInt($link1.css('top').split('px')[0]) + draw_end_y - draw_start_y;
                         $link1.css({'left':mx,'top':my});
-                        var l_array = get_center($link1);
+                        var l_array = get_absolute_center($link1);
                         var lx = l_array[0];
                         var ly = l_array[1];
                         move_line(this,lx,ly,1);
@@ -377,14 +421,14 @@ DragLine.CreateBoard = function(that){
         var now_yy = e.pageY;
         if(select_obj.type == 'object'){        //物体移动
             var $object = $(select_obj.obj);
-            var move_x =get_px_num($object.css('left')) + now_xx - xx;
-            var move_y =get_px_num($object.css('top')) + now_yy - yy;
+            var move_x =get_px_num($object.css('left')) + (now_xx - xx)/wheelnum;
+            var move_y =get_px_num($object.css('top')) + (now_yy - yy)/wheelnum;
             $object.css('left',move_x).css('top',move_y);
             //线条移动
-            var array = get_center(select_obj.obj);
+            var array = get_absolute_center($object);
             var center_x = array[0];
             var center_y = array[1];
-            var obj_id = $(select_obj.obj).attr('id');
+            var obj_id = $object.attr('id');
             //起始点为移动物体线条处理
             $('path[link1="'+obj_id+'"]').each(function(){
                 move_line(this,center_x,center_y,1);
@@ -398,8 +442,8 @@ DragLine.CreateBoard = function(that){
             var $point = $(select_obj.obj);
             var old_cx = parseFloat($point.attr('cx'));
             var old_cy = parseFloat($point.attr('cy'));
-            var new_xx = now_xx-xx+old_cx;
-            var new_yy = now_yy-yy+old_cy;
+            var new_xx = (now_xx-xx)/wheelnum+old_cx;
+            var new_yy = (now_yy-yy)/wheelnum+old_cy;
             $point.attr({'cx':new_xx,'cy':new_yy});
             $point.addClass('moved');
             //线动
@@ -426,25 +470,29 @@ DragLine.CreateBoard = function(that){
                 addRemark($path);
             }
         }else if(select_obj.type == 'board' && zoom){   //画板移动
-            var old_x,old_y;
-            if($board.css('margin-left')){
-                old_x = get_px_num($board.css('margin-left'));
-            }else{
-                old_x = 0;
-            }
-            if($board.css('margin-top')){
-                old_y = get_px_num($board.css('margin-top'));
-            }else{
-                old_y = 0;
-            }
+            var array = get_inside_margin();
+            var old_x = array[0];
+            var old_y = array[1];
             var new_xx = now_xx-xx+old_x;
             var new_yy = now_yy-yy+old_y;
-            $board.css({'margin-left':new_xx,'margin-top':new_yy});
+            select_obj.obj.css({'margin-left':new_xx,'margin-top':new_yy});
         }
         //线条移动
         if(action_status==2){
             if(draw_id&&line_obj){
-                draw_line(draw_id,line_obj,2,[xx-main_left,yy-main_top]);
+                // 画板拖动后处理
+                var array = get_center(select_obj.obj);
+                var center_x = array[0];
+                var center_y = array[1];
+                var a_array = get_absolute_center(select_obj.obj);
+                var a_center_x = a_array[0];
+                var a_center_y = a_array[1];
+                var i_array = get_inside_margin();
+                var inside_left = i_array[0];
+                var inside_top = i_array[1];
+                var mouse_x = xx-main_left-inside_left;
+                var mouse_y = yy-main_top-inside_top;
+                draw_line(draw_id,line_obj,2,[a_center_x-(center_x-mouse_x)/wheelnum,a_center_y-(center_y-mouse_y)/wheelnum]);
             }
         }
         xx = now_xx;
@@ -453,7 +501,7 @@ DragLine.CreateBoard = function(that){
     // 绑定鼠标按住画板事件
     $board.mousedown(function(e) {  
         if(!select_obj.obj&&zoom){
-            select_obj.obj = this;
+            select_obj.obj = $(this).children('#inside_board');
             select_obj.type = 'board';
         }
     })
@@ -507,19 +555,15 @@ DragLine.CreateBoard = function(that){
         return false;
     });
     // 鼠标滚轮缩放(chrome)
-    var wheelnum = 1;
     $board.bind("mousewheel",function(e){
         if(zoom){
-            if(!$('#boardOutside').length){
-                $board.wrap('<div id="boardOutside" style="margin:0 auto;width:'+($board.width()+2*get_px_num($board.css('borderLeftWidth')))+'px;height:'+($board.height()+2*get_px_num($board.css('borderTopWidth')))+'px;position: relative;overflow: hidden"></div>');
-            }
             var detail = event.wheelDelta;
             if(detail>0){
                 wheelnum += 0.1;
-                $board.css({'-moz-transform':'scale('+wheelnum+','+wheelnum+')','-webkit-transform':'scale('+wheelnum+','+wheelnum+')','-o-transform':'scale('+wheelnum+','+wheelnum+')'})
+                $('#inside_board').css({'-moz-transform':'scale('+wheelnum+','+wheelnum+')','-webkit-transform':'scale('+wheelnum+','+wheelnum+')','-o-transform':'scale('+wheelnum+','+wheelnum+')'})
             }else{
                 wheelnum -= 0.1;
-                $board.css({'-moz-transform':'scale('+wheelnum+','+wheelnum+')','-webkit-transform':'scale('+wheelnum+','+wheelnum+')','-o-transform':'scale('+wheelnum+','+wheelnum+')'})
+                $('#inside_board').css({'-moz-transform':'scale('+wheelnum+','+wheelnum+')','-webkit-transform':'scale('+wheelnum+','+wheelnum+')','-o-transform':'scale('+wheelnum+','+wheelnum+')'})
             }
         }
     })
@@ -538,9 +582,12 @@ DragLine.CreateBoard = function(that){
         var id = $(this).attr('for');
         if(!$('.remark_text[for="'+id+'"]').length){
             var line = $('#'+id);
-            var x = parseInt(line.attr('half_x'))+10;
-            var y = parseInt(line.attr('half_y'))-10;
-            $board.append('<textarea class="remark_text" style="left:'+x+'px;top:'+y+'px;" for="'+id+'"></textarea>');
+            var array = get_inside_margin();
+            var inside_left = array[0];
+            var inside_top = array[1];
+            var x = parseInt(line.attr('half_x'))+10-inside_left;
+            var y = parseInt(line.attr('half_y'))-10-inside_top;
+            $board.children('#inside_board').append('<textarea class="remark_text" style="left:'+x+'px;top:'+y+'px;" for="'+id+'"></textarea>');
         }else{
             $('.remark_text[for="'+id+'"]').attr('disabled',false);
         }
@@ -640,13 +687,18 @@ DragLine.CreateBoard = function(that){
         setZoom:function(z){
             zoom = z;
         },
+        // 设置当前操作对象
+        setSelectObj:function(obj,type){
+            select_obj.obj = obj;
+            select_obj.type = type;
+        },
         // 添加物体方法
         createMoveObj:function(svg,cx='',cy='',id=''){
             var obj_id = 'obj_'+draw_obj_id;
             if(id){
                 obj_id = id;
             }
-            $(this).append('<svg class="movebody" xmlns="http://www.w3.org/2000/svg" id="'+obj_id+'">'+svg+'</svg>');
+            $(this).children('#inside_board').append('<svg class="movebody" xmlns="http://www.w3.org/2000/svg" id="'+obj_id+'">'+svg+'</svg>');
             var $obj = $('#'+obj_id);
             if(cx === '' && cy === ''){
                 var cx = ($(this).width()-$obj.width())/2;
@@ -741,6 +793,7 @@ DragLine.CreateMenu = function($board){
         if(!$('#dragMove').hasClass('clicked')){
             $('#dragMove').trigger('click');
         }
+        $board.setSelectObj(obj,'object');
     }
 
     // 状态切换
@@ -826,20 +879,6 @@ DragLine.CreateMenu = function($board){
         $(this).css('color',val);
         $board.setTagFontColor(val);
     })
-    // 移动事件
-    $board.mousemove(function(e) {
-        if(move_obj){
-            new_xx = e.pageX;
-            new_yy = e.pageY;
-            var left =parseInt(move_obj.css('left').split('px')[0]) + new_xx - xx;
-            var top =parseInt(move_obj.css('top').split('px')[0]) + new_yy - yy;
-            // var left = move_obj.position().left-main_left+new_xx-xx;
-            // var top = move_obj.position().top-main_top+new_yy-yy;
-            move_obj.css({'left':left,'top':top});
-            xx = new_xx;
-            yy = new_yy;
-        }
-    })
     // 鼠标抬起重置参数
     $board.mouseup(function(e) {
         if(move_obj){
@@ -849,8 +888,10 @@ DragLine.CreateMenu = function($board){
             }else if(e.which==3){
                 move_obj.remove();
             }
-            btn_obj.css('border-style','outset');
-            btn_obj = '';
+            if(btn_obj){
+                btn_obj.css('border-style','outset');
+                btn_obj = '';
+            }
         }
     })
 }
@@ -1107,7 +1148,6 @@ DragLine.RandomInfo = function($board,data){
     // 初始化
     $board.setRightMenu(false);
     $board.setRemarkStatus(false);
-    $board.setZoom(true);
     $board.hide();
     $board.fadeIn(800);
     // 获取变量
@@ -1133,15 +1173,30 @@ DragLine.RandomInfo = function($board,data){
     var circle = '<circle cx="'+(main_r+1)+'" cy="'+(main_r+1)+'" r="'+main_r+'" style="fill:#ff3333;" stroke="#111" stroke-width="1"></circle><text x="50%" y="50%" dy=".3em" fill="#fff" text-anchor="middle" style="font-size:'+main_font+'px;">'+data.father.name+'</text>';
     var obj = $board.createMoveObj(circle,width/2-main_r-1,height/2-main_r-1,data.father.id);
     obj.setSize((main_r+1)*2,(main_r+1)*2);
+
+    // 随机坐标方法
+    function random_xy(width,height){
+        var x = Math.random();
+        var y = Math.random();
+        if(x>0.47&&x<0.55&&y>0.47&&y<0.55){
+            x += (Math.random()>.5 ? -1 : 1)*0.15;
+        }
+        x = 0.95*x*width;
+        y = 0.95*y*height;
+        return [x,y];
+    }
+
     // 画散点图
+    data.children.sort(function(a,b){return a.close-b.close})
     for(i in data.children){
         var children = data.children[i];
-        var random_x = 0.95*Math.random()*width;
-        var random_y = 0.95*Math.random()*height;
-
+        var r_array = random_xy(width,height);
+        var random_x = r_array[0];
+        var random_y = r_array[1];
         var r = n*children.close;
         var inside = '<circle cx="'+(r+1)+'" cy="'+(r+1)+'" r="'+r+'" style="fill:'+color_list[children.style-1]+'" stroke="#111" stroke-width="1"></circle>';
         var obj = $board.createMoveObj(inside,random_x,random_y,children.id);
+        obj.attr({'style_name':children.style,'close':children.close});
         obj.setSize((r+1)*2,(r+1)*2);
     }
     // 圆展开动画
@@ -1151,4 +1206,46 @@ DragLine.RandomInfo = function($board,data){
         $(this).animate({'r':r},1000*Math.random());
     })
     $board.setStatus(1);
+    var info = {
+        // 筛选类型方法
+        selectStyle:function(style,type){
+            $('.movebody[style_name="'+style+'"]').each(function(){
+                if(type==1){
+                    $(this).css('opacity',0.2);
+                }else{
+                    $(this).css('opacity',1);
+                }
+                var this_id = $(this).attr('id');
+                $('path[link1="'+this_id+'"]').each(function(){
+                    if(type==1){
+                        $(this).css('opacity',0.2);
+                    }else{
+                        $(this).css('opacity',1);
+                    }
+                })
+            })
+        },
+        // 筛选亲密度方法
+        selectClose:function(min,max){
+            $('.movebody').each(function(){
+                var close = $(this).attr('close');
+                if(close){
+                    close = parseInt(close);
+                    var this_id = $(this).attr('id');
+                    if(close<=max && close>=min){
+                        $(this).css('opacity',1);
+                        $('path[link1="'+this_id+'"]').each(function(){
+                            $(this).css('opacity',1);
+                        })
+                    }else{
+                        $(this).css('opacity',0.2);
+                        $('path[link1="'+this_id+'"]').each(function(){
+                            $(this).css('opacity',0.2);
+                        })
+                    }
+                }
+            })
+        }
+    }
+    return info
 }
