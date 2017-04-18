@@ -322,11 +322,11 @@ DragLine.CreateBoard = function(that){
         function setPoint(){
             var point = $('.remark_point[for="'+id+'"]');
             if(point.length){
-                var left = point.position().left-main_left+r;
+                var left = point.position().left-main_left+r+65/wheelnum;
                 var top = point.position().top-main_top+r;
-                if(left&&top){
+                if(left>0&&top>0){
                     $(that).attr({'half_x':left,'half_y':top});
-                    $('.remark_text[for="'+id+'"]').css({'left':left+10,'top':top-10})
+                    $('.remark_text[for="'+id+'"]').offset({'left':left,'top':top});
                 }
             }
         }
@@ -392,7 +392,7 @@ DragLine.CreateBoard = function(that){
                         shaking($link1,mx,my);
                     })
                 }
-            }else if(action_status==2){
+            }else if(action_status==2&&select_obj.type=="drawline"){
                 if($(this).hasClass('selected')){
                     $(this).removeClass('selected');
                 }else{
@@ -582,12 +582,10 @@ DragLine.CreateBoard = function(that){
         var id = $(this).attr('for');
         if(!$('.remark_text[for="'+id+'"]').length){
             var line = $('#'+id);
-            var array = get_inside_margin();
-            var inside_left = array[0];
-            var inside_top = array[1];
-            var x = parseInt(line.attr('half_x'))+10-inside_left;
-            var y = parseInt(line.attr('half_y'))-10-inside_top;
-            $board.children('#inside_board').append('<textarea class="remark_text" style="left:'+x+'px;top:'+y+'px;" for="'+id+'"></textarea>');
+            var x = parseInt(line.attr('half_x'));
+            var y = parseInt(line.attr('half_y'));
+            $board.children('#inside_board').append('<textarea class="remark_text" for="'+id+'"></textarea>');
+            $('.remark_text[for="'+id+'"]').offset({'left':x,'top':y});
         }else{
             $('.remark_text[for="'+id+'"]').attr('disabled',false);
         }
@@ -595,10 +593,6 @@ DragLine.CreateBoard = function(that){
     // 添加备注
     $board.on('keydown','.remark_text',function(e){
         if(e.which==13){
-            var id = $(this).attr('for');
-            var line = $('#'+id);
-            var x = parseInt(line.attr('half_x'))+10;
-            var y = parseInt(line.attr('half_y'))-10;
             var val = $(this).val();
             if(val){
                 $(this).attr('disabled',true);
