@@ -12,12 +12,12 @@
     </style>
 </head>
 <body>
-  <!--   <div class="form">
+    <div class="form">
         <input type="checkbox" name="family" value="1" checked />亲属关系
         <input type="checkbox" name="friend" value="2" checked />协作关系
         <input type="text" name="min" style="margin-left:100px;width:30px;" value="0" /> —— <input type="text" name="max" style="width:30px;" value="100">
         <button>筛选</button>
-    </div> -->
+    </div>
     <script type="text/javascript">
     var board = DragLine.CreateBoard($('body'));
     // board.setSize(600,550);
@@ -172,22 +172,34 @@
     // }
     // board.setClickFuc(fuc,fuc2);
 
-    // var random = DragLine.RandomInfo(board,data);
+    var info = DragLine.RandomInfo(board,data);
 
 
     $('input[type="checkbox"]').change(function(){
-        var is_checked = $(this).is(':checked');
-        var val = $(this).val();
-        if(is_checked){
-            info.selectStyle(val,2);
-        }else{
-            info.selectStyle(val,1);
-        }
+        var min = $('input[name="min"]').val();
+        var max = $('input[name="max"]').val();
+        var styles = [];
+        $('input[type="checkbox"]').each(function(){
+            var is_checked = $(this).is(':checked');
+            var val = $(this).val();
+            if(is_checked){
+                styles.push(val);
+            }
+        })
+        info.selectCommon(styles,min,max);
     })
     $('button').click(function(){
         var min = $('input[name="min"]').val();
         var max = $('input[name="max"]').val();
-        info.selectClose(min,max);
+        var styles = [];
+        $('input[type="checkbox"]').each(function(){
+            var is_checked = $(this).is(':checked');
+            var val = $(this).val();
+            if(is_checked){
+                styles.push(val);
+            }
+        })
+        info.selectCommon(styles,min,max);
     })
     </script>
 </body>

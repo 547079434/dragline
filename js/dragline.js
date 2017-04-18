@@ -1007,6 +1007,28 @@ DragLine.LoadingInfo = function($board,data,num=1){
     function randomsort(a, b) {  
         return Math.random()>.5 ? -1 : 1;  
     }  
+    // 筛选显示隐藏方法
+    function select_toggle(opacity){
+        $('.movebody').each(function(){
+            var this_id = $(this).attr('id');
+            if(this_id != data.father.id){
+                var style = $(this).attr('style_name');
+                var close = parseInt($(this).attr('close'));
+                if($.inArray(style, style_list)!=-1 && close<=close_max && close>close_min){
+                    $(this).css('opacity',1);
+                    $('path[link1="'+this_id+'"]').each(function(){
+                        $(this).css('opacity',1);
+                    })
+                }else{
+                    $(this).css('opacity',opacity);
+                    $('path[link1="'+this_id+'"]').each(function(){
+                        $(this).css('opacity',opacity);
+                    })
+                }
+            }
+            
+        })
+    }
 
     // 数据处理
     var point_dict = cutPart(r_list,partNum);
@@ -1081,45 +1103,13 @@ DragLine.LoadingInfo = function($board,data,num=1){
     }
 
     var info = {
-        // 筛选类型方法
-        selectStyle:function(style,type){
-            $('.movebody[style_name="'+style+'"]').each(function(){
-                if(type==1){
-                    $(this).css('opacity',0.2);
-                }else{
-                    $(this).css('opacity',1);
-                }
-                var this_id = $(this).attr('id');
-                $('path[link1="'+this_id+'"]').each(function(){
-                    if(type==1){
-                        $(this).css('opacity',0.2);
-                    }else{
-                        $(this).css('opacity',1);
-                    }
-                })
-            })
+        // 筛选方法
+        selectCommon:function(styles,min,max,opacity=0.2){
+            style_list = styles;
+            close_min = min;
+            close_max = max;
+            select_toggle(opacity);
         },
-        // 筛选亲密度方法
-        selectClose:function(min,max){
-            $('.movebody').each(function(){
-                var close = $(this).attr('close');
-                if(close){
-                    close = parseInt(close);
-                    var this_id = $(this).attr('id');
-                    if(close<=max && close>=min){
-                        $(this).css('opacity',1);
-                        $('path[link1="'+this_id+'"]').each(function(){
-                            $(this).css('opacity',1);
-                        })
-                    }else{
-                        $(this).css('opacity',0.2);
-                        $('path[link1="'+this_id+'"]').each(function(){
-                            $(this).css('opacity',0.2);
-                        })
-                    }
-                }
-            })
-        }
     }
     // 发散连线动画
     document.querySelectorAll('path').forEach(function(path) {
@@ -1149,6 +1139,9 @@ DragLine.RandomInfo = function($board,data){
     var height = $board.height();                                       //画板高度
     var color_list = ['#4990E2','#BD0FE1','#F67D23','#417505']          //散点颜色数组
     var total = data.children.length;                                   //子节点总个数
+    var style_list = [1,2,3];                                           //筛选样式列表
+    var close_min = 0;                                                  //亲密度最小值
+    var close_max = 100;                                                //亲密度最大值                                          
     // 画主图
     var n,main_r,main_font;
     if(total<=50){
@@ -1179,6 +1172,28 @@ DragLine.RandomInfo = function($board,data){
         y = 0.95*y*height;
         return [x,y];
     }
+    // 筛选显示隐藏方法
+    function select_toggle(opacity){
+        $('.movebody').each(function(){
+            var this_id = $(this).attr('id');
+            if(this_id != data.father.id){
+                var style = $(this).attr('style_name');
+                var close = parseInt($(this).attr('close'));
+                if($.inArray(style, style_list)!=-1 && close<=close_max && close>close_min){
+                    $(this).css('opacity',1);
+                    $('path[link1="'+this_id+'"]').each(function(){
+                        $(this).css('opacity',1);
+                    })
+                }else{
+                    $(this).css('opacity',opacity);
+                    $('path[link1="'+this_id+'"]').each(function(){
+                        $(this).css('opacity',opacity);
+                    })
+                }
+            }
+            
+        })
+    }
 
     // 画散点图
     data.children.sort(function(a,b){return a.close-b.close})
@@ -1201,45 +1216,14 @@ DragLine.RandomInfo = function($board,data){
     })
     $board.setStatus(1);
     var info = {
-        // 筛选类型方法
-        selectStyle:function(style,type){
-            $('.movebody[style_name="'+style+'"]').each(function(){
-                if(type==1){
-                    $(this).css('opacity',0.2);
-                }else{
-                    $(this).css('opacity',1);
-                }
-                var this_id = $(this).attr('id');
-                $('path[link1="'+this_id+'"]').each(function(){
-                    if(type==1){
-                        $(this).css('opacity',0.2);
-                    }else{
-                        $(this).css('opacity',1);
-                    }
-                })
-            })
+        // 筛选方法
+        selectCommon:function(styles,min,max,opacity=0.2){
+            style_list = styles;
+            close_min = min;
+            close_max = max;
+            select_toggle(opacity);
         },
-        // 筛选亲密度方法
-        selectClose:function(min,max){
-            $('.movebody').each(function(){
-                var close = $(this).attr('close');
-                if(close){
-                    close = parseInt(close);
-                    var this_id = $(this).attr('id');
-                    if(close<=max && close>=min){
-                        $(this).css('opacity',1);
-                        $('path[link1="'+this_id+'"]').each(function(){
-                            $(this).css('opacity',1);
-                        })
-                    }else{
-                        $(this).css('opacity',0.2);
-                        $('path[link1="'+this_id+'"]').each(function(){
-                            $(this).css('opacity',0.2);
-                        })
-                    }
-                }
-            })
-        }
+       
     }
     return info
 }
