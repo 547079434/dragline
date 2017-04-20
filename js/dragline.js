@@ -1055,19 +1055,19 @@ DragLine.LoadingInfo = function($board,data,num=1){
         var m,r,stroke_color,fill_color,text;
         children.defs = '';
         // 类型条件判断
-        if(!(style instanceof Array)){
-            fill_color = style_color_list[style-1];
-            stroke_color = style_border_list[style-1];
-        }else{
-            if(style.length==2){
-                children.defs = '<defs><linearGradient id="style_'+children.id+'" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:'+style_color_list[style[0]-1]+';stop-opacity:1" /><stop offset="100%" style="stop-color:'+style_color_list[style[1]-1]+';stop-opacity:1" /></linearGradient></defs>';
-            }else if(style.length==3){
-                children.defs = '<defs><linearGradient id="style_'+children.id+'" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:'+style_color_list[style[0]-1]+';stop-opacity:1" /><stop offset="50%" style="stop-color:'+style_color_list[style[1]-1]+';stop-opacity:1" /><stop offset="100%" style="stop-color:'+style_color_list[style[2]-1]+';stop-opacity:1" /></linearGradient></defs>';
-            }
+        if(style.length==1){
+            fill_color = style_color_list[style[0]-1];
+            stroke_color = style_border_list[style[0]-1];
+        }else if(style.length==2){
+            children.defs = '<defs><linearGradient id="style_'+children.id+'" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:'+style_color_list[style[0]-1]+';stop-opacity:1" /><stop offset="100%" style="stop-color:'+style_color_list[style[1]-1]+';stop-opacity:1" /></linearGradient></defs>';
             fill_color = 'url(#style_'+children.id+')';
-            stroke_color = '#000';
-            style = style[0];
+            stroke_color = style_border_list[style[0]-1];
+        }else if(style.length==3){
+            children.defs = '<defs><linearGradient id="style_'+children.id+'" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:'+style_color_list[style[0]-1]+';stop-opacity:1" /><stop offset="50%" style="stop-color:'+style_color_list[style[1]-1]+';stop-opacity:1" /><stop offset="100%" style="stop-color:'+style_color_list[style[2]-1]+';stop-opacity:1" /></linearGradient></defs>';
+            fill_color = 'url(#style_'+children.id+')';
+            stroke_color = style_border_list[style[0]-1];
         }
+        style = style[0];
         var line_color = stroke_color;
         // 亲密度条件判断
         if(children.close >= 90){
