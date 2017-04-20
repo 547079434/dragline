@@ -1047,20 +1047,26 @@ DragLine.LoadingInfo = function($board,data,num=1){
         }
     }
     // 画图
+    var style_color_list = ['rgb(64,169,249)','rgb(142,25,126)','orange'];
+    var style_border_list = ['rgb(28,17,160)','rgb(96,6,84)','#E7864A'];
     for(i in data.children){
         var children = data.children[i];
         var style = children.style;
         var m,r,stroke_color,fill_color,text;
+        children.defs = '';
         // 类型条件判断
-        if(style == 1){
-            fill_color = 'rgb(64,169,249)';
-            stroke_color = 'rgb(28,17,160)';
-        }else if(style == 2){
-            fill_color = 'rgb(142,25,126)';
-            stroke_color = 'rgb(96,6,84)';
-        }else if(style == 3){
-            fill_color = 'orange';
-            stroke_color = 'rgb(96,6,84)';
+        if(!(style instanceof Array)){
+            fill_color = style_color_list[style-1];
+            stroke_color = style_border_list[style-1];
+        }else{
+            if(style.length==2){
+                children.defs = '<defs><linearGradient id="style_'+children.id+'" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:'+style_color_list[style[0]-1]+';stop-opacity:1" /><stop offset="100%" style="stop-color:'+style_color_list[style[1]-1]+';stop-opacity:1" /></linearGradient></defs>';
+            }else if(style.length==3){
+                children.defs = '<defs><linearGradient id="style_'+children.id+'" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:'+style_color_list[style[0]-1]+';stop-opacity:1" /><stop offset="50%" style="stop-color:'+style_color_list[style[1]-1]+';stop-opacity:1" /><stop offset="100%" style="stop-color:'+style_color_list[style[2]-1]+';stop-opacity:1" /></linearGradient></defs>';
+            }
+            fill_color = 'url(#style_'+children.id+')';
+            stroke_color = '#000';
+            style = style[0];
         }
         var line_color = stroke_color;
         // 亲密度条件判断
@@ -1090,7 +1096,7 @@ DragLine.LoadingInfo = function($board,data,num=1){
             var last_one = index_dict[style][m].pop();
             var xy = point_dict[style][m][last_one];
             if(xy){
-                var inside = '<circle cx="'+(r+1)+'" cy="'+(r+1)+'" r="'+r+'" style="fill:'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1"></circle>'+text;
+                var inside = children.defs+'<circle cx="'+(r+1)+'" cy="'+(r+1)+'" r="'+r+'" style="fill:'+fill_color+'" stroke="'+stroke_color+'" stroke-width="1"></circle>'+text;
                 var obj = $board.createMoveObj(inside,xy.x,xy.y,children.id);
                 obj.setSize((r+1)*2,(r+1)*2);
                 obj.attr({'style_name':children.style,'close':children.close});
@@ -1101,7 +1107,6 @@ DragLine.LoadingInfo = function($board,data,num=1){
             }
         }
     }
-
     var info = {
         // 筛选方法
         selectCommon:function(styles,min,max,opacity=0.2){

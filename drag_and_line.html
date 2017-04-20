@@ -12,17 +12,17 @@
     </style>
 </head>
 <body>
-    <div class="form">
+    <!-- <div class="form">
         <input type="checkbox" name="family" value="1" checked />亲属关系
         <input type="checkbox" name="friend" value="2" checked />协作关系
         <input type="text" name="min" style="margin-left:100px;width:30px;" value="0" /> —— <input type="text" name="max" style="width:30px;" value="100">
         <button>筛选</button>
-    </div>
+    </div> -->
     <script type="text/javascript">
     var board = DragLine.CreateBoard($('body'));
-    // board.setSize(600,550);
-    // board.setBorder(0);
-    DragLine.CreateMenu(board);
+    board.setSize(600,550);
+    board.setBorder(0);
+    // DragLine.CreateMenu(board);
  
     // var inside = '<circle cx="55" cy="55" r="40" style="fill:none;" stroke="blue" stroke-width="2"/><rect width="30" height="16" x="0" y="47" rx="5" ry="5" fill="orange"/><text x="0" y="57" fill="#fff" style="font-size:12px">标签</text>';
     // var obj = board.createMoveObj(inside,100,100,'test');
@@ -32,15 +32,15 @@
     var data = {
         'father':{'id':'main','name':'张三'},
         'children':[
-            {'id':'1_1','name':'名字','style':1,'close':90},
+            {'id':'1_1','name':'名字','style':[1,2],'close':90},
             {'id':'1_2','name':'名字','style':1,'close':90},
             {'id':'1_3','name':'名字','style':1,'close':90},
-            {'id':'1_4','name':'名字','style':1,'close':90},
-            {'id':'1_5','name':'名字','style':1,'close':90},
-            {'id':'1_6','name':'名字','style':2,'close':90},
-            {'id':'1_7','name':'名字','style':2,'close':90},
+            // {'id':'1_4','name':'名字','style':1,'close':90},
+            // {'id':'1_5','name':'名字','style':1,'close':90},
+            {'id':'1_6','name':'名字','style':[2,3],'close':90},
+            {'id':'1_7','name':'名字','style':[3,2,1],'close':90},
             {'id':'1_8','name':'名字','style':2,'close':90},
-            {'id':'1_9','name':'名字','style':2,'close':90},
+            // {'id':'1_9','name':'名字','style':2,'close':90},
             {'id':'1_10','name':'名字','style':3,'close':90},
 
             {'id':'2_1','name':'名字','style':1,'close':80},
@@ -54,38 +54,38 @@
             {'id':'2_9','name':'名字','style':2,'close':80},
             {'id':'2_10','name':'名字','style':2,'close':80},
             {'id':'2_11','name':'名字','style':2,'close':80},
-            {'id':'2_12','name':'名字','style':2,'close':80},
-            {'id':'2_13','name':'名字','style':1,'close':80},
-            {'id':'2_14','name':'名字','style':1,'close':80},
-            {'id':'2_15','name':'名字','style':1,'close':80},
-            {'id':'2_16','name':'名字','style':1,'close':80},
-            {'id':'2_17','name':'名字','style':1,'close':80},
-            {'id':'2_18','name':'名字','style':1,'close':80},
-            {'id':'2_19','name':'名字','style':2,'close':80},
-            {'id':'2_20','name':'名字','style':2,'close':80},
+            // {'id':'2_12','name':'名字','style':2,'close':80},
+            // {'id':'2_13','name':'名字','style':1,'close':80},
+            // {'id':'2_14','name':'名字','style':1,'close':80},
+            // {'id':'2_15','name':'名字','style':1,'close':80},
+            // {'id':'2_16','name':'名字','style':1,'close':80},
+            // {'id':'2_17','name':'名字','style':1,'close':80},
+            // {'id':'2_18','name':'名字','style':1,'close':80},
+            // {'id':'2_19','name':'名字','style':2,'close':80},
+            // {'id':'2_20','name':'名字','style':2,'close':80},
           
             {'id':'3_1','name':'名字','style':1,'close':50},
             {'id':'3_2','name':'名字','style':1,'close':50},
             {'id':'3_3','name':'名字','style':1,'close':50},
-            {'id':'3_4','name':'名字','style':1,'close':50},
-            {'id':'3_5','name':'名字','style':1,'close':50},
-            {'id':'3_6','name':'名字','style':1,'close':50},
-            {'id':'3_7','name':'名字','style':1,'close':50},
-            {'id':'3_8','name':'名字','style':1,'close':50},
-            {'id':'3_9','name':'名字','style':1,'close':50},
+            // {'id':'3_4','name':'名字','style':1,'close':50},
+            // {'id':'3_5','name':'名字','style':1,'close':50},
+            // {'id':'3_6','name':'名字','style':1,'close':50},
+            // {'id':'3_7','name':'名字','style':1,'close':50},
+            // {'id':'3_8','name':'名字','style':1,'close':50},
+            // {'id':'3_9','name':'名字','style':1,'close':50},
             {'id':'3_10','name':'名字','style':1,'close':50},
             {'id':'3_11','name':'名字','style':1,'close':50},
             {'id':'3_12','name':'名字','style':1,'close':50},
             {'id':'3_13','name':'名字','style':1,'close':50},
             {'id':'3_14','name':'名字','style':1,'close':50},
-            {'id':'3_15','name':'名字','style':2,'close':50},
-            {'id':'3_16','name':'名字','style':2,'close':50},
-            {'id':'3_17','name':'名字','style':2,'close':50},
-            {'id':'3_18','name':'名字','style':2,'close':50},
-            {'id':'3_19','name':'名字','style':2,'close':50},
-            {'id':'3_20','name':'名字','style':2,'close':50},
-            {'id':'3_21','name':'名字','style':2,'close':50},
-            {'id':'3_22','name':'名字','style':2,'close':50},
+            // {'id':'3_15','name':'名字','style':2,'close':50},
+            // {'id':'3_16','name':'名字','style':2,'close':50},
+            // {'id':'3_17','name':'名字','style':2,'close':50},
+            // {'id':'3_18','name':'名字','style':2,'close':50},
+            // {'id':'3_19','name':'名字','style':2,'close':50},
+            // {'id':'3_20','name':'名字','style':2,'close':50},
+            // {'id':'3_21','name':'名字','style':2,'close':50},
+            // {'id':'3_22','name':'名字','style':2,'close':50},
             {'id':'3_23','name':'名字','style':2,'close':50},
             {'id':'3_24','name':'名字','style':2,'close':50},
             {'id':'3_25','name':'名字','style':2,'close':50},
@@ -98,20 +98,20 @@
             {'id':'3_32','name':'名字','style':3,'close':50},
             {'id':'3_33','name':'名字','style':3,'close':50},
 
-            {'id':'4_1','name':'名字','style':1,'close':40},
-            {'id':'4_2','name':'名字','style':1,'close':40},
-            {'id':'4_3','name':'名字','style':1,'close':40},
-            {'id':'4_4','name':'名字','style':1,'close':40},
-            {'id':'4_5','name':'名字','style':1,'close':40},
-            {'id':'4_6','name':'名字','style':1,'close':40},
-            {'id':'4_7','name':'名字','style':1,'close':40},
-            {'id':'4_8','name':'名字','style':1,'close':40},
-            {'id':'4_9','name':'名字','style':1,'close':40},
-            {'id':'4_10','name':'名字','style':1,'close':40},
-            {'id':'4_11','name':'名字','style':1,'close':40},
-            {'id':'4_12','name':'名字','style':1,'close':40},
-            {'id':'4_13','name':'名字','style':1,'close':40},
-            {'id':'4_14','name':'名字','style':1,'close':40},
+            // {'id':'4_1','name':'名字','style':1,'close':40},
+            // {'id':'4_2','name':'名字','style':1,'close':40},
+            // {'id':'4_3','name':'名字','style':1,'close':40},
+            // {'id':'4_4','name':'名字','style':1,'close':40},
+            // {'id':'4_5','name':'名字','style':1,'close':40},
+            // {'id':'4_6','name':'名字','style':1,'close':40},
+            // {'id':'4_7','name':'名字','style':1,'close':40},
+            // {'id':'4_8','name':'名字','style':1,'close':40},
+            // {'id':'4_9','name':'名字','style':1,'close':40},
+            // {'id':'4_10','name':'名字','style':1,'close':40},
+            // {'id':'4_11','name':'名字','style':1,'close':40},
+            // {'id':'4_12','name':'名字','style':1,'close':40},
+            // {'id':'4_13','name':'名字','style':1,'close':40},
+            // {'id':'4_14','name':'名字','style':1,'close':40},
             {'id':'4_15','name':'名字','style':1,'close':40},
             {'id':'4_16','name':'名字','style':1,'close':40},
             {'id':'4_17','name':'名字','style':1,'close':40},
@@ -122,23 +122,23 @@
             {'id':'4_22','name':'名字','style':1,'close':40},
             {'id':'4_23','name':'名字','style':2,'close':40},
             {'id':'4_24','name':'名字','style':2,'close':40},
-            {'id':'4_25','name':'名字','style':2,'close':40},
-            {'id':'4_26','name':'名字','style':2,'close':40},
-            {'id':'4_27','name':'名字','style':2,'close':40},
-            {'id':'4_28','name':'名字','style':2,'close':40},
-            {'id':'4_29','name':'名字','style':2,'close':40},
-            {'id':'4_31','name':'名字','style':2,'close':40},
-            {'id':'4_32','name':'名字','style':2,'close':40},
-            {'id':'4_33','name':'名字','style':2,'close':40},
-            {'id':'4_34','name':'名字','style':2,'close':40},
-            {'id':'4_35','name':'名字','style':2,'close':40},
-            {'id':'4_36','name':'名字','style':2,'close':40},
-            {'id':'4_37','name':'名字','style':2,'close':40},
-            {'id':'4_38','name':'名字','style':2,'close':40},
-            {'id':'4_39','name':'名字','style':2,'close':40},
-            {'id':'4_40','name':'名字','style':2,'close':40},
-            {'id':'4_41','name':'名字','style':2,'close':40},
-            {'id':'4_42','name':'名字','style':2,'close':40},
+            // {'id':'4_25','name':'名字','style':2,'close':40},
+            // {'id':'4_26','name':'名字','style':2,'close':40},
+            // {'id':'4_27','name':'名字','style':2,'close':40},
+            // {'id':'4_28','name':'名字','style':2,'close':40},
+            // {'id':'4_29','name':'名字','style':2,'close':40},
+            // {'id':'4_31','name':'名字','style':2,'close':40},
+            // {'id':'4_32','name':'名字','style':2,'close':40},
+            // {'id':'4_33','name':'名字','style':2,'close':40},
+            // {'id':'4_34','name':'名字','style':2,'close':40},
+            // {'id':'4_35','name':'名字','style':2,'close':40},
+            // {'id':'4_36','name':'名字','style':2,'close':40},
+            // {'id':'4_37','name':'名字','style':2,'close':40},
+            // {'id':'4_38','name':'名字','style':2,'close':40},
+            // {'id':'4_39','name':'名字','style':2,'close':40},
+            // {'id':'4_40','name':'名字','style':2,'close':40},
+            // {'id':'4_41','name':'名字','style':2,'close':40},
+            // {'id':'4_42','name':'名字','style':2,'close':40},
             {'id':'4_43','name':'名字','style':2,'close':40},
 
         ]
@@ -161,7 +161,7 @@
         ]
     }
     
-    // var info = DragLine.LoadingInfo(board,data,2);
+    var info = DragLine.LoadingInfo(board,data,3);
     // function fuc(id){
     //     console.log('单机:',id);
     // }
@@ -172,7 +172,7 @@
     // }
     // board.setClickFuc(fuc,fuc2);
 
-    var info = DragLine.RandomInfo(board,data);
+    // var info = DragLine.RandomInfo(board,data);
 
 
     $('input[type="checkbox"]').change(function(){
@@ -186,7 +186,7 @@
                 styles.push(val);
             }
         })
-        info.selectCommon(styles,min,max);
+        info.selectCommon(styles,min,max,0);
     })
     $('button').click(function(){
         var min = $('input[name="min"]').val();
@@ -199,7 +199,7 @@
                 styles.push(val);
             }
         })
-        info.selectCommon(styles,min,max);
+        info.selectCommon(styles,min,max,0);
     })
     </script>
 </body>
