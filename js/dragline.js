@@ -1012,9 +1012,17 @@ DragLine.LoadingInfo = function($board,data,num=1){
         $('.movebody').each(function(){
             var this_id = $(this).attr('id');
             if(this_id != data.father.id){
-                var style = $(this).attr('style_name');
+                var style = $(this).attr('style_name').split(',');
+                var show_status = false;
+                for(i in style){
+                    if($.inArray(style[i], style_list)!=-1){
+                        show_status = true;
+                        break;
+                    }
+                }
+
                 var close = parseInt($(this).attr('close'));
-                if($.inArray(style, style_list)!=-1 && close<=close_max && close>close_min){
+                if(show_status && close<=close_max && close>close_min){
                     $(this).css('opacity',1);
                     $('path[link1="'+this_id+'"]').each(function(){
                         $(this).css('opacity',1);
