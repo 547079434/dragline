@@ -1141,7 +1141,7 @@ DragLine.LoadingInfo = function($board,data,num=1){
 }
 
 // 生成随机分布图
-DragLine.RandomInfo = function($board,data){
+DragLine.RandomInfo = function($board,data,main_r=18){
     // 初始化
     $board.setRightMenu(false);
     $board.setRemarkStatus(false);
@@ -1156,18 +1156,18 @@ DragLine.RandomInfo = function($board,data){
     var close_min = 0;                                                  //亲密度最小值
     var close_max = 100;                                                //亲密度最大值                                          
     // 画主图
-    var n,main_r,main_font;
+    var n,main_font;
     if(total<=50){
         n = 0.25;
-        main_r = 30;
+        main_r = main_r+14;
         main_font = 16;
     }else if(total<=100){
         n = 0.2;
-        main_r = 20;
+        main_r = main_r+6;
         main_font = 14;
     }else{
         n = 0.12;
-        main_r = 16;
+        main_r = main_r;
         main_font = 12;
     }
     var circle = '<circle cx="'+(main_r+1)+'" cy="'+(main_r+1)+'" r="'+main_r+'" style="fill:#ff3333;" stroke="#111" stroke-width="1"></circle><text x="50%" y="50%" dy=".3em" fill="#fff" text-anchor="middle" style="font-size:'+main_font+'px;">'+data.father.name+'</text>';
@@ -1178,7 +1178,7 @@ DragLine.RandomInfo = function($board,data){
     function random_xy(width,height){
         var x = Math.random();
         var y = Math.random();
-        if(x>0.47&&x<0.55&&y>0.47&&y<0.55){
+        if(x>0.45&&x<0.57&&y>0.45&&y<0.57){
             x += (Math.random()>.5 ? -1 : 1)*0.15;
         }
         x = 0.95*x*width;
