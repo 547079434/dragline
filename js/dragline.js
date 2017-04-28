@@ -337,7 +337,8 @@ DragLine.CreateBoard = function(that){
         var move1 = rnum*10;
         var move2 = rnum*5;
         var move3 = rnum*3;
-        obj.animate({'left':x+move1,'top':y+move1},70).animate({'left':x-move1,'top':y-move1},70).animate({'left':x+move2,'top':y+move2},80).animate({'left':x-move2,'top':y-move2},80).animate({'left':x+move3,'top':y+move3},90).animate({'left':x-move3,'top':y-move3},90).animate({'left':x,'top':y},100);
+        var speed = 50;
+        obj.animate({'left':x+move1,'top':y+move1},speed).animate({'left':x-move1,'top':y-move1},speed).animate({'left':x+move2,'top':y+move2},speed+10).animate({'left':x-move2,'top':y-move2},speed+10).animate({'left':x+move3,'top':y+move3},speed+20).animate({'left':x-move3,'top':y-move3},speed+20).animate({'left':x,'top':y},speed+30);
     }
 
     // 绑定选中移动物体事件
@@ -382,14 +383,16 @@ DragLine.CreateBoard = function(that){
                     var draw_end_y = array[1];
                     $('path[link2="'+obj_id+'"]').each(function(){
                         var $link1 = $('#'+$(this).attr('link1'));
-                        var mx =parseInt($link1.css('left').split('px')[0]) + draw_end_x - draw_start_x;
-                        var my =parseInt($link1.css('top').split('px')[0]) + draw_end_y - draw_start_y;
-                        $link1.css({'left':mx,'top':my});
-                        var l_array = get_absolute_center($link1);
-                        var lx = l_array[0];
-                        var ly = l_array[1];
-                        move_line(this,lx,ly,1);
-                        shaking($link1,mx,my);
+                        if(!(draw_end_x - draw_start_x)==0 || !(draw_end_y - draw_start_y)==0){
+                            var mx =parseInt($link1.css('left').split('px')[0]) + draw_end_x - draw_start_x;
+                            var my =parseInt($link1.css('top').split('px')[0]) + draw_end_y - draw_start_y;
+                            $link1.css({'left':mx,'top':my});
+                            var l_array = get_absolute_center($link1);
+                            var lx = l_array[0];
+                            var ly = l_array[1];
+                            move_line(this,lx,ly,1);
+                            shaking($link1,mx,my);
+                        }
                     })
                 }
             }else if(action_status==2&&select_obj.type=="drawline"){
@@ -618,7 +621,8 @@ DragLine.CreateBoard = function(that){
             main_top = get_top(this);
         },
         // 设置画板边框方法
-        setBorder:function(width,color='#333'){
+        setBorder:function(width,color){
+            color = color || '#333';
             $(this).css({'border-width':width,'border-color':color});
             main_left = get_left(this);
             main_top = get_top(this);
@@ -687,7 +691,10 @@ DragLine.CreateBoard = function(that){
             select_obj.type = type;
         },
         // 添加物体方法
-        createMoveObj:function(svg,cx='',cy='',id=''){
+        createMoveObj:function(svg,cx,cy,id){
+            cx = cx || '';
+            cy = cy || '';
+            id = id || '';
             var obj_id = 'obj_'+draw_obj_id;
             if(id){
                 obj_id = id;
@@ -721,7 +728,9 @@ DragLine.CreateBoard = function(that){
             return line;
         },
         // 设置自定义物体点击双击事件
-        setClickFuc:function(fuc='',fuc2=''){
+        setClickFuc:function(fuc,fuc2){
+            fuc = fuc || '';
+            fuc2 = fuc2 || '';
             var timer = null;
             $board.on('dblclick','.movebody',function(){
                 clearTimeout(timer);
@@ -891,7 +900,7 @@ DragLine.CreateMenu = function($board){
 }
 
 // 生成单一指向关系图
-DragLine.LoadingInfo = function($board,data,num=1){
+DragLine.LoadingInfo = function($board,data,num){
     // 初始化
     $board.setMoveTogether(true);
     $board.setRightMenu(false);
@@ -903,8 +912,8 @@ DragLine.LoadingInfo = function($board,data,num=1){
     var height = $board.height();                                       //画板高度
     var x0 = width/2-30;                                                //中心点x轴
     var y0 = height/2-30;                                               //中心点y轴
-    var r_list = [80,140,195,245]                                       //外层半径
-    var partNum = num                                                   //模块数量 (目前支持2、3分法)
+    var r_list = [80,140,195,245];                                      //外层半径
+    var partNum = num || 1;                                             //模块数量 (目前支持2、3分法)
     // 中心点画圆
     var circle = '<circle cx="30" cy="30" r="28" style="fill:white;" stroke="rgb(0,82,137)" stroke-width="2"></circle><text x="50%" y="50%" dy=".3em" fill="rgb(0,82,137)" text-anchor="middle">'+data.father.name+'</text>';
     var obj = $board.createMoveObj(circle,x0,y0,data.father.id);
@@ -1117,7 +1126,8 @@ DragLine.LoadingInfo = function($board,data,num=1){
     }
     var info = {
         // 筛选方法
-        selectCommon:function(styles,min,max,opacity=0.2){
+        selectCommon:function(styles,min,max,opacity){
+            opacity = opacity || 0.2;
             style_list = styles;
             close_min = min;
             close_max = max;
@@ -1125,14 +1135,16 @@ DragLine.LoadingInfo = function($board,data,num=1){
         },
     }
     // 发散连线动画
-    document.querySelectorAll('path').forEach(function(path) {
-        var length = path.getTotalLength(); 
+    var nodelist = document.querySelectorAll('path');
+    for(i=0;i<nodelist.length;i++){
+        path = nodelist[i];
+        var length = path.getTotalLength();
         $(path).attr({'stroke-dasharray':length,'stroke-dashoffset':length});
         $(path).animate({'stroke-dashoffset':length},500).animate({'stroke-dashoffset':length*2},1200).animate({'stroke-dasharray':'','stroke-dashoffset':''},0);
-    })
+    }
     // 圆展开动画
     $('.movebody circle').each(function(){
-        var r = parseInt($(this).css('r').split('px')[0]);
+        var r = parseInt($(this).attr('r').split('px')[0]);
         $(this).css('r','0');
         $(this).animate({'r':r},500*Math.random());
     })
@@ -1141,7 +1153,8 @@ DragLine.LoadingInfo = function($board,data,num=1){
 }
 
 // 生成随机分布图
-DragLine.RandomInfo = function($board,data,main_r=18){
+DragLine.RandomInfo = function($board,data,main_r){
+    main_r = main_r || 18;
     // 初始化
     $board.setRightMenu(false);
     $board.setRemarkStatus(false);
@@ -1223,14 +1236,15 @@ DragLine.RandomInfo = function($board,data,main_r=18){
     }
     // 圆展开动画
     $('.movebody circle').each(function(){
-        var r = parseInt($(this).css('r').split('px')[0]);
+        var r = parseInt($(this).attr('r').split('px')[0]);
         $(this).css('r','0');
         $(this).animate({'r':r},1000*Math.random());
     })
     $board.setStatus(1);
     var info = {
         // 筛选方法
-        selectCommon:function(styles,min,max,opacity=0.2){
+        selectCommon:function(styles,min,max,opacity){
+            opacity = opacity || 0.2;
             style_list = styles;
             close_min = min;
             close_max = max;
