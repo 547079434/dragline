@@ -1286,7 +1286,7 @@ DragLine.ForceInfo = function($board,data){
     function move(){
         var relation = 200;         // 关系表示原始距离
         var k = 0.05;               // 弹簧系数
-        var t = 0.05                // 时间
+        var t = 0.04;                // 时间
         $('.movebody').each(function(){
             // relation = $(this).attr('relation');
             var left = get_px_num($(this).css('left'));
@@ -1320,7 +1320,7 @@ DragLine.ForceInfo = function($board,data){
                 
             })
             var d_left = left-old_left;
-            if(d_left>0.01 || d_left<-0.01){
+            if(d_left>0.008 || d_left<-0.008){
                 $(this).css({'left':left,'top':top});    
             }
         })
