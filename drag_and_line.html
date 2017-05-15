@@ -147,18 +147,18 @@
     var data2 = {
         'father':{'id':'main','name':'李四'},
         'children':[
-            {'id':'1','name':'名字','style':1,'close':90},
-            {'id':'2','name':'名字','style':1,'close':90},
-            {'id':'11','name':'名字','style':1,'close':80},
-            {'id':'12','name':'名字','style':1,'close':80},
-            {'id':'13','name':'名字','style':1,'close':80},
-            {'id':'14','name':'名字','style':1,'close':80},
-            {'id':'23','name':'名字','style':1,'close':50},
-            {'id':'24','name':'名字','style':1,'close':50},
-            {'id':'31','name':'名字','style':1,'close':40},
-            {'id':'32','name':'名字','style':1,'close':40},
-            {'id':'35','name':'名字','style':1,'close':40},
-            {'id':'39','name':'名字','style':1,'close':40},
+            {'id':'1','name':'名字','style':1,'close':200},
+            {'id':'2','name':'名字','style':1,'close':200},
+            {'id':'11','name':'名字','style':1,'close':100},
+            {'id':'12','name':'名字','style':1,'close':100},
+            {'id':'13','name':'名字','style':1,'close':100},
+            {'id':'14','name':'名字','style':1,'close':100},
+            {'id':'23','name':'名字','style':1,'close':80},
+            // {'id':'24','name':'名字','style':2,'close':80},
+            // {'id':'31','name':'名字','style':2,'close':80},
+            // {'id':'32','name':'名字','style':2,'close':50},
+            // {'id':'35','name':'名字','style':2,'close':50},
+            // {'id':'39','name':'名字','style':2,'close':50},
         ]
     }
     
@@ -174,7 +174,7 @@
     // board.setClickFuc(fuc,fuc2);
 
     // var info = DragLine.RandomInfo(board,data);
-    DragLine.ForceInfo(board,data);
+    DragLine.ForceInfo(board,data2);
 
     $('input[type="checkbox"]').change(function(){
         var min = $('input[name="min"]').val();

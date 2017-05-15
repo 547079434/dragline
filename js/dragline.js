@@ -1263,6 +1263,7 @@ DragLine.ForceInfo = function($board,data){
     // 获取变量
     var width = $board.width();                                         //画板宽度
     var height = $board.height();                                       //画板高度
+    var color_list = ['#4990E2','#BD0FE1','#F67D23','#417505']          //散点颜色数组
 
     // 范围随机方法
     function random(min,max){
@@ -1275,35 +1276,55 @@ DragLine.ForceInfo = function($board,data){
 
     // 画图
     for(i in data.children){
-        var circle = '<circle cx="10" cy="10" r="10" style="fill:#ff3333;"></circle>';
+        var circle = '<circle cx="10" cy="10" r="10" fill="'+color_list[data.children[i].style]+'"></circle>';
         var obj = $board.createMoveObj(circle,random(0,width),random(0,height),i.id);
         obj.setSize(20,20);
+        obj.attr('relation',data.children[i].close);
+        obj.attr('data_style',data.children[i].style);
     }
 
     function move(){
-        var relation = 100;         // 关系表示原始距离
-        var k = 0.1;                // 系数
-        var t = 0.1                 // 时间
+        var relation = 200;         // 关系表示原始距离
+        var k = 0.05;               // 弹簧系数
+        var t = 0.05                // 时间
         $('.movebody').each(function(){
+            // relation = $(this).attr('relation');
             var left = get_px_num($(this).css('left'));
             var top = get_px_num($(this).css('top'));
+            var old_left = left;
+            var old_top = top;
             var id = $(this).attr('id');
+            var style = $(this).attr('data_style');
             $('.movebody').each(function(){
                 var in_id = $(this).attr('id');
-                if(!(id==in_id)){
+                var in_style = $(this).attr('data_style');
+                if(!(id==in_id) && style==in_style){
                     var in_left = get_px_num($(this).css('left'));
                     var in_top = get_px_num($(this).css('top'));
                     // 计算力
                     var distance = Math.sqrt((left-in_left)*(left-in_left)+(top-in_top)*(top-in_top));
-                    var f = (relation-distance)*k
+                    var f = (relation-distance)*k;
                     // a = f/m,v = v0+a*Δt,s = s0+v*Δt
                     // s =s0 + (v0+f*t)*t
-                    left += f*t*(left-in_left)*t
-                    top += f*t*(top-in_top)*t
+                    left += f*t*(left-in_left)*t;
+                    top += f*t*(top-in_top)*t;
                 }
+                
+                // 连线
+                // $('path[link1="'+id+'"][link2="'+in_id+'"]').remove();
+                // $('path[link1="'+in_id+'"][link2="'+id+'"]').remove();
+                // if(!$('path[link1="'+id+'"][link2="'+in_id+'"]').length && !$('path[link1="'+in_id+'"][link2="'+id+'"]').length){
+                //     var line = $board.drawLine(id,in_id);
+                //     line.attr({'stroke-width':1});
+                // }
+                
             })
-            $(this).animate({'left':left,'top':top},100)
+            var d_left = left-old_left;
+            if(d_left>0.01 || d_left<-0.01){
+                $(this).css({'left':left,'top':top});    
+            }
         })
     }
-    timer=setInterval(move,100)
+    timer=setInterval(move,10)
+    $board.setStatus(1);
 }
