@@ -1167,7 +1167,7 @@ DragLine.RandomInfo = function($board,data,main_r){
     var total = data.children.length;                                   //子节点总个数
     var style_list = [1,2,3];                                           //筛选样式列表
     var close_min = 0;                                                  //亲密度最小值
-    var close_max = 100;                                                //亲密度最大值                                          
+    var close_max = 100;                                                //亲密度最大值
     // 画主图
     var n,main_font;
     if(total<=50){
@@ -1253,4 +1253,57 @@ DragLine.RandomInfo = function($board,data,main_r){
        
     }
     return info
+}
+
+// 生成力导向图
+DragLine.ForceInfo = function($board,data){
+    // 初始化
+    $board.setRightMenu(false);
+    $board.setRemarkStatus(false);
+    // 获取变量
+    var width = $board.width();                                         //画板宽度
+    var height = $board.height();                                       //画板高度
+
+    // 范围随机方法
+    function random(min,max){
+        return Math.round(min+(max-min)*Math.random());
+    }
+    // 获取px数值
+    function get_px_num(px){
+        return parseFloat(px.split('px')[0]);
+    }
+
+    // 画图
+    for(i in data.children){
+        var circle = '<circle cx="10" cy="10" r="10" style="fill:#ff3333;"></circle>';
+        var obj = $board.createMoveObj(circle,random(0,width),random(0,height),i.id);
+        obj.setSize(20,20);
+    }
+
+    function move(){
+        var relation = 100;         // 关系表示原始距离
+        var k = 0.1;                // 系数
+        var t = 0.1                 // 时间
+        $('.movebody').each(function(){
+            var left = get_px_num($(this).css('left'));
+            var top = get_px_num($(this).css('top'));
+            var id = $(this).attr('id');
+            $('.movebody').each(function(){
+                var in_id = $(this).attr('id');
+                if(!(id==in_id)){
+                    var in_left = get_px_num($(this).css('left'));
+                    var in_top = get_px_num($(this).css('top'));
+                    // 计算力
+                    var distance = Math.sqrt((left-in_left)*(left-in_left)+(top-in_top)*(top-in_top));
+                    var f = (relation-distance)*k
+                    // a = f/m,v = v0+a*Δt,s = s0+v*Δt
+                    // s =s0 + (v0+f*t)*t
+                    left += f*t*(left-in_left)*t
+                    top += f*t*(top-in_top)*t
+                }
+            })
+            $(this).animate({'left':left,'top':top},100)
+        })
+    }
+    timer=setInterval(move,100)
 }
