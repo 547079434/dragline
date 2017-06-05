@@ -322,7 +322,7 @@ DragLine.CreateBoard = function(that){
         function setPoint(){
             var point = $('.remark_point[for="'+id+'"]');
             if(point.length){
-                var left = point.position().left-main_left+r+105/wheelnum;
+                var left = point.position().left+r+35/wheelnum;
                 var top = point.position().top-main_top+r;
                 if(left>0&&top>0){
                     $(that).attr({'half_x':left,'half_y':top});
