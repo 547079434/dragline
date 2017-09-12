@@ -9,7 +9,6 @@
     <script type="text/javascript" src="js/threejs/jspack/loaders/OBJLoader.js"></script>
     <script type="text/javascript" src="js/threejs/jspack/loaders/MTLLoader.js"></script>
     <script type="text/javascript" src="js/threejs/jspack/libs/stats.min.js"></script>
-    <script type="text/javascript" src="js/threejs/jspack/renderers/CanvasRenderer.js"></script>
     <script type="text/javascript" src="js/threejs/jspack/controls/TrackballControls.js"></script>
     <style>
         html,body{margin: 0;width: 100%;height: 100%;overflow: hidden;}
@@ -26,38 +25,63 @@
         scene = new THREE.Scene();                  // 场景
         camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);                                  // 相机
         camera.position.x = 0;
-        camera.position.y = 0;
+        camera.position.y = 100;
         camera.position.z = 500;
+        //设置相机的上为z轴方向
         // camera.up.x = 0;
         // camera.up.y = 1;
         // camera.up.z = 0;
+        //设置视野的中心坐标
         // camera.lookAt({
         //     x : 0,
         //     y : 0,
         //     z : 0
         // });
-        renderer = new THREE.WebGLRenderer();       // 渲染器
+        renderer = new THREE.WebGLRenderer({antialias:true});       // 渲染器(属性：抗锯齿)
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
         // renderer.setClearColor(0xFFFFFF, 1.0);
         controls = new THREE.TrackballControls(camera);           // 漫游器
+
+        // 地板
+        var gt = new THREE.TextureLoader().load( "images/grasslight-big.jpg" );
+        var gg = new THREE.PlaneBufferGeometry( 2000, 2000 );
+        var gm = new THREE.MeshPhongMaterial( { color: 0xffffff, map: gt } );
+        var ground = new THREE.Mesh( gg, gm );
+        ground.rotation.x = - Math.PI / 2;
+        ground.material.map.repeat.set( 8, 8 );
+        ground.material.map.wrapS = ground.material.map.wrapT = THREE.RepeatWrapping;
+        ground.receiveShadow = true;
+        scene.add( ground );
+
         document.body.appendChild(renderer.domElement);
     }
     
     // 光
     function initLight(){
         // 环境光
-        // var ambientLight = new THREE.AmbientLight("red");  
+        // var ambientLight = new THREE.AmbientLight(0xffffff);  
         // scene.add(ambientLight);  
         // 平行光
         // light = new THREE.DirectionalLight('#fff',1);
-        // light.position.set(1,0,0.5);
+        // light.position.set(0,1,1);
         // scene.add(light);
+        // 聚光灯
+        var spotlight = new THREE.SpotLight( 0xffffff, 2, 1000 );
+        spotlight.position.set( -100, 350, 350 );
+        spotlight.angle = 0.5;                      // 光柱宽
+        spotlight.penumbra = 0.5;                   
+        spotlight.castShadow = true;
+        spotlight.shadow.mapSize.width = 1024;
+        spotlight.shadow.mapSize.height = 1024;
+        // scene.add( new THREE.CameraHelper( light.shadow.camera ) );
+        scene.add( spotlight );
         // 点光源
         pointlight = new THREE.PointLight( 0xff0040, 1, 500 );
-        pointlight.position.set(1,0,1);
-
-        // var sprite = new THREE.Sprite(new THREE.SpriteCanvasMaterial({ color: 0xff0040 }));
-        // pointlight.add( sprite );
+        // pointlight.position.set(1,0,1);
+        // 点光源添加光点
+        var sphere = new THREE.SphereGeometry( 1, 16, 8 );
+        pointlight.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: 0xff0040 } )));
         scene.add( pointlight );
     }
     
@@ -95,8 +119,9 @@
                 object.scale.y = 1;
                 object.scale.z = 1; 
                 object.updateMatrix();  
-                object.position.y = -50;  
+                object.position.y = 0;  
                 model = object;
+                object.castShadow = true;
                 scene.add(object);
             }, onProgress, onError ); 
         })
@@ -106,6 +131,10 @@
     function render() {
         requestAnimationFrame(render);
         controls.update();
+        var time = Date.now() * 0.0005;
+        pointlight.position.x = Math.sin( time * 0.7 ) * -50;
+        pointlight.position.y = 100;
+        pointlight.position.z = Math.cos( time * 0.3 ) * 50;
         renderer.render(scene, camera);
     }
 
