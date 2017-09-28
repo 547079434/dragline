@@ -123,10 +123,15 @@
 			var table = [];
 			for(i=1;i<=9;i++){
 				for(j=1;j<=18;j++){
-					// table.push({'id':i+'_'+j,'name':'TEST'+i+'_'+j,'column':j,'line':i});
-					table.push(i+'_'+j,"NAME","(CONTENT)",j,i);
+					table.push({
+						'id':i+'_'+j,
+						'name':'NAME'+i+'_'+j,
+						'content':'(CONTENT)',
+						'column':j,
+						'line':i,
+						'head':'images/default.jpg'
+					});
 				}
-				
 			}
 
 			var camera, scene, renderer;
@@ -139,44 +144,30 @@
 			animate();
 
 			function init() {
-
+				scene = new THREE.Scene();
+				
 				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.z = 3000;
 
-				scene = new THREE.Scene();
-
 				// table
-
-				for ( var i = 0; i < table.length; i += 5 ) {
+				for ( var i = 0; i < table.length; i ++ ) {
 					var element = document.createElement( 'div' );
 					element.className = 'element';
-					element.id = table[i];
-					element.setAttribute("dataid",table[i]);  
+					element.id = table[i]['id'];
+					element.setAttribute("dataid",table[i]['id']);  
 					element.addEventListener("click",function(event){click_element(event,table[i]);},false);
 					element.style.backgroundColor = 'rgba(0,127,127,' + ( Math.random() * 0.5 + 0.25 ) + ')';
 
-					// var number = document.createElement( 'div' );
-					// number.className = 'number';
-					// number.textContent = (i/5) + 1;
-					// number.setAttribute("dataid",table[i]);  
-					// element.appendChild( number );
-
-					// var symbol = document.createElement( 'div' );
-					// symbol.className = 'symbol';
-					// symbol.textContent = table[ i ];
-					// symbol.setAttribute("dataid",table[i]);  
-					// element.appendChild( symbol );
-
 					var symbol = document.createElement( 'img' );
-					symbol.src = 'images/default.jpg';
+					symbol.src = table[i]['head'];
 					symbol.className = 'head';
-					symbol.setAttribute("dataid",table[i]);  
+					symbol.setAttribute("dataid",table[i]['id']);  
 					element.appendChild( symbol );
 
 					var details = document.createElement( 'div' );
 					details.className = 'details';
-					details.innerHTML = table[ i + 1 ] + '<br>' + table[ i + 2 ];
-					details.setAttribute("dataid",table[i]);  
+					details.innerHTML = table[i]['name'] + '<br>' + table[i]['content'];
+					details.setAttribute("dataid",table[i]['id']);  
 					element.appendChild( details );
 
 					var object = new THREE.CSS3DObject( element );
@@ -188,88 +179,60 @@
 					objects.push( object );
 
 					//
-
 					var object = new THREE.Object3D();
-					object.position.x = ( table[ i + 3 ] * 140 ) - 1330;
-					object.position.y = - ( table[ i + 4 ] * 180 ) + 990;
+					object.position.x = ( table[i]['column'] * 140 ) - 1330;
+					object.position.y = - ( table[i]['line'] * 180 ) + 990;
 
 					targets.table.push( object );
 
 				}
 
 				// sphere
-
 				var vector = new THREE.Vector3();
 				var spherical = new THREE.Spherical();
-
 				for ( var i = 0, l = objects.length; i < l; i ++ ) {
-
 					var phi = Math.acos( -1 + ( 2 * i ) / l );
 					var theta = Math.sqrt( l * Math.PI ) * phi;
-
 					var object = new THREE.Object3D();
-
 					spherical.set( 800, phi, theta );
-
 					object.position.setFromSpherical( spherical );
-
 					vector.copy( object.position ).multiplyScalar( 2 );
-
 					object.lookAt( vector );
-
 					targets.sphere.push( object );
-
 				}
 
 				// helix
-
 				var vector = new THREE.Vector3();
 				var cylindrical = new THREE.Cylindrical();
-
 				for ( var i = 0, l = objects.length; i < l; i ++ ) {
-
 					var theta = i * 0.175 + Math.PI;
 					var y = - ( i * 8 ) + 450;
-
 					var object = new THREE.Object3D();
-
 					cylindrical.set( 900, theta, y );
-
 					object.position.setFromCylindrical( cylindrical );
-
 					vector.x = object.position.x * 2;
 					vector.y = object.position.y;
 					vector.z = object.position.z * 2;
-
 					object.lookAt( vector );
-
 					targets.helix.push( object );
-
 				}
 
 				// grid
-
 				for ( var i = 0; i < objects.length; i ++ ) {
-
 					var object = new THREE.Object3D();
-
 					object.position.x = ( ( i % 5 ) * 400 ) - 800;
 					object.position.y = ( - ( Math.floor( i / 5 ) % 5 ) * 400 ) + 800;
 					object.position.z = ( Math.floor( i / 25 ) ) * 1000 - 2000;
-
 					targets.grid.push( object );
-
 				}
 
 				//
-
 				renderer = new THREE.CSS3DRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				renderer.domElement.style.position = 'absolute';
 				document.getElementById( 'container' ).appendChild( renderer.domElement );
 
 				//
-
 				controls = new THREE.TrackballControls( camera, renderer.domElement );
 				controls.rotateSpeed = 0.5;
 				controls.minDistance = 500;
@@ -341,30 +304,20 @@
 			}
 
 			function onWindowResize() {
-
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
-
 				renderer.setSize( window.innerWidth, window.innerHeight );
-
 				render();
-
 			}
 
 			function animate() {
-
 				requestAnimationFrame( animate );
-
 				TWEEN.update();
-
 				controls.update();
-
 			}
 
 			function render() {
-
 				renderer.render( scene, camera );
-
 			}
 
 			function click_element(event,that){
