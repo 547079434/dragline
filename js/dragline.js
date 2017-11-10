@@ -3,6 +3,7 @@ var DragLine = function(){
 
 };
 
+var force_timer;
 // 创建画布
 DragLine.CreateBoard = function(that){
     $(that).append('<div id="dragline_board"><div id="inside_board"><svg class="lines" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="remark_bakground" x="0" y="0" width="1" height="1"><rect x="0" y="0" width="12" height="12" fill="#C26B26"></rect><rect x="2" y="5" width="8" height="2" fill="#fff"></rect></pattern></defs></svg><ul class="rightMenu"><li id="addTag">添加标签</li><li id="delTag">删除标签</li></ul></div></div>');
@@ -756,6 +757,7 @@ DragLine.CreateBoard = function(that){
         },
         // 清空画板
         clear:function(){
+            window.clearTimeout(force_timer);
             $('.movebody').each(function(){
                 var id = $(this).attr('id');
                 delete_obj(id);
@@ -1021,27 +1023,35 @@ DragLine.LoadingInfo = function($board,data,num){
         $('.movebody').each(function(){
             var this_id = $(this).attr('id');
             if(this_id != data.father.id){
-                var style = $(this).attr('style_name').split(',');
+                var style = $(this).attr('style_name');
                 var show_status = false;
-                for(i in style){
-                    if($.inArray(style[i], style_list)!=-1){
-                        show_status = true;
-                        break;
+                if(style){
+                    style = style.split(',');
+                    for(i in style){
+                        if($.inArray(style[i], style_list)!=-1){
+                            show_status = true;
+                            break;
+                        }
+                    }
+                }else{
+                    show_status = true;
+                }
+                
+                var close = parseInt($(this).attr('close'));
+                if(close){
+                    if(show_status && close<=close_max && close>close_min){
+                        $(this).css('opacity',1);
+                        $('path[link1="'+this_id+'"]').each(function(){
+                            $(this).css('opacity',1);
+                        })
+                    }else{
+                        $(this).css('opacity',opacity);
+                        $('path[link1="'+this_id+'"]').each(function(){
+                            $(this).css('opacity',opacity);
+                        })
                     }
                 }
-
-                var close = parseInt($(this).attr('close'));
-                if(show_status && close<=close_max && close>close_min){
-                    $(this).css('opacity',1);
-                    $('path[link1="'+this_id+'"]').each(function(){
-                        $(this).css('opacity',1);
-                    })
-                }else{
-                    $(this).css('opacity',opacity);
-                    $('path[link1="'+this_id+'"]').each(function(){
-                        $(this).css('opacity',opacity);
-                    })
-                }
+                
             }
             
         })
@@ -1323,8 +1333,9 @@ DragLine.ForceInfo = function($board,data){
             if(d_left>0.008 || d_left<-0.008){
                 $(this).css({'left':left,'top':top});    
             }
+            $(this).css('opacity',1);
         })
     }
-    timer=setInterval(move,10)
+    force_timer=setInterval(move,10)
     $board.setStatus(1);
 }
