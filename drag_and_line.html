@@ -7,10 +7,32 @@
     <script type="text/javascript" src="js/jquery-3.2.0.min.js"></script>
     <script type="text/javascript" src="js/dragline.js"></script>
     <style type="text/css">
-    html,body{width: 100%;height: 100%;margin:0;}
-    .form{width: 25%;height: 50px;margin:20px;position: absolute;right: 0;text-align: right;}
-    .btns{width: 100%;text-align: center;margin:10px auto;}
-    .btns button{cursor:pointer;}
+    html,body{
+        width: 100%;
+        height: 100%
+        ;margin:0;
+    }
+    .form{
+        width: 20%;
+        height: 50px;
+        margin: 20px;
+        position: absolute;
+        left: -40px;
+        top: 50px;
+        text-align: right;
+        z-index: 10;
+    }
+    .form input[type="checkbox"]{
+        margin-left: 50px;
+    }
+    .btns{
+        width: 100%;
+        text-align: center;
+        margin:10px auto;
+    }
+    .btns button{
+        cursor:pointer;
+    }
     </style>
 </head>
 <body>
@@ -35,7 +57,7 @@
     // board.setSize(600,550);
     // board.setBorder(0);
     DragLine.CreateMenu(board);
- 
+
     // var inside = '<circle cx="55" cy="55" r="40" style="fill:none;" stroke="blue" stroke-width="2"/><rect width="30" height="16" x="0" y="47" rx="5" ry="5" fill="orange"/><text x="0" y="57" fill="#fff" style="font-size:12px">标签</text>';
     // var obj = board.createMoveObj(inside,100,100,'test');
     // obj.setSize(110,110);
@@ -64,7 +86,7 @@
             {'id':'2_8','name':'名字','style':[2],'close':80},
             {'id':'2_9','name':'名字','style':[2],'close':80},
             {'id':'2_10','name':'名字','style':[2],'close':80},
-          
+
             {'id':'3_1','name':'名字','style':[1],'close':50},
             {'id':'3_2','name':'名字','style':[1],'close':50},
             {'id':'3_3','name':'名字','style':[1],'close':50},
@@ -182,7 +204,7 @@
         }
     }
 
-    
+
     </script>
 </body>
 </html>

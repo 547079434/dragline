@@ -1,23 +1,224 @@
-#dragline_board{margin:0 auto;display: block;width: 800px;height: 500px;position: relative;overflow: hidden;border:3px solid #333;user-select: none;}
-#inside_board{width: 100%;height: 100%;position: relative;}
-.movebody{width: 100px;height: 100px;position: absolute;z-index: 1;}
-.lines{width: 100%;height: 100%;position: absolute;overflow: visible;}
-.point1,.point2{z-index: 1;cursor: ne-resize;display: none;}
-.line1,.line2{display: none;}
-.selected{border: 1px solid #000;} 
-.dragline_menu{width: 50px;height: 100%;background: #ccc;right: 0;top: 0;position: absolute;z-index: 2;border-left:1px solid #999;}
-.dragline_menu ul{ margin:0;padding: 0;width: 100%;height: 100%;list-style: none; user-select: none;}
-.dragline_menu li{ text-align: center;background: #fff;cursor: pointer;}
-.li_icon {line-height: 15px;font-size: 26px;border: 2px outset;width: 20px;height: 20px;margin:10px auto;}
-.li_status {line-height: 20px;font-size: 12px;border: 2px outset;width: 36px;height: 20px;margin:10px auto;}
-.dragline_menu select{ width: 36px;margin: 8px 7px;font-weight:bold; }
-.dragline_menu input{ width: 36px;margin: 6px 7px;font-size:12px; }
-.dragline_menu span{ font-size:14px; }
-.menuline{ width: 100%;height: 0;border-top:1px solid #000; }
-.clicked { border-style: inset; }
-.rightMenu { width: 60px;height: auto;background: #fff;position: absolute;list-style: none;border: 1px solid #ddd;padding:0;margin: 0;font-size: 12px;text-align: center;cursor: pointer;display: none;z-index:3 }
-.rightMenu li:hover{ background: #666;color:#fff; }
-.remark_point {cursor: pointer;}
-.hide_point {opacity: 0;cursor: default;}
-.remark_text {position: absolute;z-index: 5;border: none;background: #FFF5C0;padding: 5px;width: 100px;height: 28px;resize:none;overflow:hidden;border: 1px solid #FFDDA4;box-shadow: 0 2px 4px 0 rgba(0,0,0,0.50);}
-#tagColor {color: #F67D23}
+#dragline_board{
+    margin:0 auto;
+    display: block;
+    width: 92%;
+    height: 475px;
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #000;
+}
+#inside_board{
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+.movebody{
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    z-index: 1;
+}
+.lines{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    overflow: visible;
+}
+.point1,.point2{
+    z-index: 1;
+    cursor: ne-resize;
+    display: none;
+}
+.line1,.line2{
+    display: none;
+}
+.selected{
+    border: 1px solid #000;
+}
+.dragline_menu{
+    width: 200px;
+    height: 100%;
+    background: #F2F2F2;
+    right: 0;
+    top: 0;
+    position: absolute;
+    z-index: 2;
+    border-left:1px solid #999;
+}
+.dragline_menu ul{
+    margin:0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    list-style: none;
+    user-select: none;
+}
+.dragline_menu li{
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+}
+.li_icon {
+    line-height: 15px;
+    font-size: 26px;
+    border: 1px solid #F2F2F2;
+    width: 48px;
+    height: 20px;
+    padding-top: 25px;
+    line-height: 24px;
+    font-size: 12px;
+    margin: 10px 0 10px 12px;
+    float: left;
+}
+.li_status {
+    float: left;
+    margin: 10px 0 10px 15px;
+    line-height: 20px;
+    font-size: 12px;
+    border: 1px outset;
+    width: 44px;
+    height: 20px;
+}
+.li_select{
+    width: 100%;
+    overflow: hidden;
+}
+.li_select label{
+    width: 40%;
+    float: left;
+    margin: 8px 0;
+}
+.li_select select,input{
+    width: 50%;
+    float: left;
+}
+.dragline_menu select{
+    margin: 8px 7px;
+    font-weight:bold;
+}
+.dragline_menu input{
+    margin: 6px 7px;
+    font-size:12px;
+}
+.dragline_menu span{
+    font-size:14px;
+}
+.menu_part{
+    width: 100%;
+    overflow: hidden;
+    border-bottom: 1px solid #DFDFDF;;
+}
+.menu_head{
+    cursor: pointer;
+    font-size: 14px;
+    color: #2C3E50;
+    letter-spacing: 1px;
+    margin: 5px 0;
+}
+.menu_head span{
+    display: block;
+    width: 12px;
+    height: 8px;
+    background: url(../common/svg/tags/drop_down.svg) no-repeat;
+    float: left;
+    margin: 6px 4px 0 10px;
+}
+.menuline{
+    width: 100%;
+    height: 0;
+    border-top:1px solid #DFDFDF;
+    float: left;
+}
+.clicked {
+    border-style: inset;
+}
+.rightMenu {
+    width: 60px;
+    height: auto;
+    background: #fff;
+    position: absolute;
+    list-style: none;
+    border: 1px solid #ddd;
+    padding:0;
+    margin: 0;
+    font-size: 12px;
+    text-align: center;
+    cursor: pointer;
+    display: none;
+    z-index:3
+}
+.rightMenu li:hover{
+    background: #666;
+    color:#fff;
+}
+.remark_point {
+    cursor: pointer;
+}
+.hide_point {
+    opacity: 0;
+    cursor: default;
+}
+.remark_text {
+    position: absolute;
+    z-index: 5;
+    border: none;
+    background: #FFF5C0;
+    padding: 5px;
+    width: 100px;
+    height: 28px;
+    resize:none;
+    overflow:hidden;
+    border: 1px solid #FFDDA4;
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,0.50);
+}
+#tagColor {
+    color: #F67D23
+}
+
+
+#addPeople{
+    background: url('../common/svg/tags/1.svg') no-repeat;
+    background-size: 60%;
+    background-position-x: 10px;
+}
+#addCar{
+    background: url('../common/svg/tags/2.svg') no-repeat;
+    background-size: 60%;
+    background-position: 10px 3px;
+}
+#addCase{
+    background: url('../common/svg/tags/3.svg') no-repeat;
+    background-size: 60%;
+    background-position-x: 10px;
+}
+#addQQ{
+    background: url('../common/svg/tags/4.svg') no-repeat;
+    background-size: 60%;
+    background-position-x: 10px;
+}
+#addPhone{
+    background: url('../common/svg/tags/5.svg') no-repeat;
+    background-size: 40%;
+    background-position-x: 15px;
+}
+#addLabel{
+    background: url('../common/svg/tags/6.svg') no-repeat;
+    background-size: 60%;
+    background-position: 10px 2px;
+}
+#addDatabase{
+    background: url('../common/svg/tags/7.svg') no-repeat;
+    background-size: 55%;
+    background-position-x: 11px;
+}
+#addInfo{
+    background: url('../common/svg/tags/8.svg') no-repeat;
+    background-size: 55%;
+    background-position-x: 11px;
+}
+#addTrajectory{
+    background: url('../common/svg/tags/9.svg') no-repeat;
+    background-size: 50%;
+    background-position-x: 12px;
+}
