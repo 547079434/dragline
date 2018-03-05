@@ -1,8 +1,8 @@
 #dragline_board{
-    margin:0 auto;
+    margin:10px auto;
     display: block;
     width: 92%;
-    height: 475px;
+    height: 600px;
     position: relative;
     overflow: hidden;
     background: #fff;
@@ -56,7 +56,6 @@
 }
 .dragline_menu li{
     text-align: center;
-    cursor: pointer;
     font-size: 12px;
 }
 .li_icon {
@@ -70,6 +69,7 @@
     font-size: 12px;
     margin: 10px 0 10px 12px;
     float: left;
+    cursor: pointer;
 }
 .li_status {
     float: left;
@@ -79,6 +79,8 @@
     border: 1px outset;
     width: 44px;
     height: 20px;
+    background: #fff;
+    cursor: pointer;
 }
 .li_select{
     width: 100%;
@@ -92,6 +94,7 @@
 .li_select select,input{
     width: 50%;
     float: left;
+    cursor: pointer;
 }
 .dragline_menu select{
     margin: 8px 7px;
@@ -114,15 +117,21 @@
     font-size: 14px;
     color: #2C3E50;
     letter-spacing: 1px;
-    margin: 5px 0;
+    padding: 5px 0;
+}
+.menu_head:hover{
+    background: #DFDFDF;
 }
 .menu_head span{
     display: block;
     width: 12px;
-    height: 8px;
-    background: url(../common/svg/tags/drop_down.svg) no-repeat;
+    height: 12px;
+    background: url(../common/svg/drop_down.svg) no-repeat;
     float: left;
     margin: 6px 4px 0 10px;
+}
+.right_icon{
+    background: url(../common/svg/right.svg) no-repeat !important;
 }
 .menuline{
     width: 100%;

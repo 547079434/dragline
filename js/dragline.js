@@ -929,6 +929,11 @@ DragLine.CreateMenu = function($board){
     // 收缩菜单
     $board.on('click','.menu_head',function(e){
         $(this).siblings('li').toggle();
+        if($(this).children('span').hasClass('right_icon')){
+            $(this).children('span').removeClass('right_icon');
+        }else{
+            $(this).children('span').addClass('right_icon');
+        }
     })
     // 鼠标抬起重置参数
     $board.mouseup(function(e) {
