@@ -36,12 +36,12 @@
     </style>
 </head>
 <body>
-    <div class="form">
-        <input type="checkbox" name="family" value="1" checked />亲属关系
+    <div class="form" style="display: none;">
+        <input type="checkbox" name="family" value="1" checked />关系1
         <br/>
-        <input type="checkbox" name="friend" value="2" checked />协作关系
+        <input type="checkbox" name="friend" value="2" checked />关系2
         <br/>
-        <input type="checkbox" name="airport" value="3" checked />航班关系
+        <input type="checkbox" name="airport" value="3" checked />关系3
         <br/><br/>
         <input type="text" name="min" style="margin-left:100px;width:30px;" value="0" /> —— <input type="text" name="max" style="width:30px;" value="100">
         <button>筛选</button>
@@ -189,6 +189,7 @@
 
     function show_pic(type){
         if(type==1){
+
             board.clear();
             var info = DragLine.LoadingInfo(board,data,3);
             select(info);
